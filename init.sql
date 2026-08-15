@@ -11,6 +11,7 @@ SET timezone = 'UTC';
 CREATE SCHEMA IF NOT EXISTS auth;
 CREATE SCHEMA IF NOT EXISTS fleet;
 CREATE SCHEMA IF NOT EXISTS telemetry;
+CREATE SCHEMA IF NOT EXISTS alert;
 
 -- ---------- RESTRICTED ROLES ----------
 -- Each service gets its own user, scoped to its own schema.
@@ -30,16 +31,22 @@ BEGIN
         REVOKE ALL ON SCHEMA telemetry FROM agrio_telemetry;
         DROP ROLE agrio_telemetry;
     END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'agrio_alert') THEN
+        REVOKE ALL ON SCHEMA alert FROM agrio_alert;
+        DROP ROLE agrio_alert;
+    END IF;
 END$$;
 
 CREATE ROLE agrio_auth      WITH LOGIN PASSWORD 'agrio_auth_pwd';
 CREATE ROLE agrio_fleet     WITH LOGIN PASSWORD 'agrio_fleet_pwd';
 CREATE ROLE agrio_telemetry WITH LOGIN PASSWORD 'agrio_telemetry_pwd';
+CREATE ROLE agrio_alert     WITH LOGIN PASSWORD 'agrio_alert_pwd';
 
 -- ---------- GRANTS ----------
 GRANT USAGE, CREATE ON SCHEMA auth      TO agrio_auth;
 GRANT USAGE, CREATE ON SCHEMA fleet     TO agrio_fleet;
 GRANT USAGE, CREATE ON SCHEMA telemetry TO agrio_telemetry;
+GRANT USAGE, CREATE ON SCHEMA alert     TO agrio_alert;
 
 -- Default privileges for future objects inside each schema
 ALTER DEFAULT PRIVILEGES IN SCHEMA auth
@@ -56,3 +63,8 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA telemetry
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES    TO agrio_telemetry;
 ALTER DEFAULT PRIVILEGES IN SCHEMA telemetry
     GRANT USAGE, SELECT, UPDATE          ON SEQUENCES TO agrio_telemetry;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA alert
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES    TO agrio_alert;
+ALTER DEFAULT PRIVILEGES IN SCHEMA alert
+    GRANT USAGE, SELECT, UPDATE          ON SEQUENCES TO agrio_alert;

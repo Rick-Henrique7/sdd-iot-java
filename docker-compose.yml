@@ -121,16 +121,48 @@ services:
     networks:
       - agrio-network
 
-  # ---- DISABLED until Change 003 (telemetry-ingestion-service) ----
-  # telemetry-ingestion-service:
-  #   build: { context: ., dockerfile: telemetry-ingestion-service/Dockerfile }
-  #   container_name: agrio-telemetry-ingestion
-  #   ...
+  # ---- ENABLED in Change 003 ----
+  telemetry-ingestion-service:
+    build:
+      context: .
+      dockerfile: telemetry-ingestion-service/Dockerfile
+    container_name: agrio-telemetry-ingestion
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_REDIS_HOST=redis
+      - SPRING_REDIS_PORT=6379
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/agrio_db?currentSchema=telemetry
+      - SPRING_DATASOURCE_USERNAME=agrio_telemetry
+      - SPRING_DATASOURCE_PASSWORD=agrio_telemetry_pwd
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - agrio-network
 
-  # ---- DISABLED until Change 004 (alert-processing-service) ----
-  # alert-processing-service:
-  #   build: { context: ., dockerfile: alert-processing-service/Dockerfile }
-  #   ...
+  # ---- ENABLED in Change 004 ----
+  alert-processing-service:
+    build:
+      context: .
+      dockerfile: alert-processing-service/Dockerfile
+    container_name: agrio-alert-processing
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - agrio-network
 
   # ---- DISABLED until Change 005 (fleet-mapping-service) ----
   # fleet-mapping-service:

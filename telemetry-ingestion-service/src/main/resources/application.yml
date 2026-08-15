@@ -1,0 +1,126 @@
+# ============================================================
+#  telemetry-ingestion-service — Spring Boot configuration
+# ============================================================
+
+server:
+  port: 8081
+  shutdown: graceful
+
+spring:
+  application:
+    name: telemetry-ingestion-service
+  main:
+    banner-mode: off
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: telemetry-ingestion-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        spring.json.trusted.packages: "com.johndeere.agrio.*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:localhost}
+      port: ${SPRING_REDIS_PORT:6379}
+      timeout: 2s
+
+# ---------- Telemetry-specific ----------
+telemetry:
+  topics:
+    raw: agri.telemetry.raw
+    processed: agri.telemetry.processed
+  cache:
+    # 0 means no TTL (key persists until explicitly overwritten).
+    ttl-seconds: 0
+
+# ---------- Actuator ----------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+# ---------- Logging ----------
+logging:
+  level:
+    root: INFO
+    com.johndeere.agrio: INFO
+    org.apache.kafka: WARN
+    org.springframework.kafka: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/agrio_db?currentSchema=telemetry}
+    username: ${SPRING_DATASOURCE_USERNAME:agrio_telemetry}
+    password: ${SPRING_DATASOURCE_PASSWORD:agrio_telemetry_pwd}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: false
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
+  data:
+    redis:
+      host: ${SPRING_REDIS_HOST:redis}
+      port: ${SPRING_REDIS_PORT:6379}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    # `INIT=CREATE SCHEMA IF NOT EXISTS telemetry` ensures the
+    # `telemetry` schema exists before Hibernate tries to drop /
+    # create tables inside it. The H2 URL in PostgreSQL mode
+    # uppercases unquoted identifiers, so we must match the
+    # schema name as Hibernate emits it (`TELEMETRY`).
+    url: jdbc:h2:mem:telemetry-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;INIT=CREATE SCHEMA IF NOT EXISTS TELEMETRY
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: false
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
+    consumer:
+      auto-offset-reset: earliest
+  data:
+    redis:
+      host: localhost
+      port: 16379
