@@ -7,8 +7,7 @@
 #  Note: the matrix is built with the `include` form rather than
 #  a list-of-objects because GitHub Actions has historically
 #  mis-rendered `matrix.<list>.name` as the literal string
-#  "Object" — which then broke the tag and made the build fail
-#  with "repository name must be lowercase".
+#  "Object" — which then broke the tag and made the build fail.
 # ============================================================
 
 name: Docker image
@@ -29,8 +28,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Use the include form so each service carries its
-        # own `dockerfile` next to the simple `service` name.
+        # Plain list of names so each job name is the service
+        # itself (no "Object" artefacts). The `include` block
+        # attaches the matching Dockerfile path.
         service:
           - api-gateway
           - auth-service
@@ -62,14 +62,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Lowercase the image name (GHCR is strict)
+        id: canon
+        # `github.repository_owner` is "Rick-Henrique7" with mixed
+        # case. GHCR rejects the tag when the OWNER part is mixed
+        # case in some buildx versions, so we normalise to all
+        # lowercase here and reuse the result in the next step.
+        run: |
+          owner="$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')"
+          echo "owner=$owner" >> "$GITHUB_OUTPUT"
+          echo "image=agrio-${{ matrix.service }}" >> "$GITHUB_OUTPUT"
+
       - name: Build (and push, on main)
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: ${{ matrix.dockerfile }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ghcr.io/${{ github.repository_owner }}/agrio-${{ matrix.service }}:latest
-            ghcr.io/${{ github.repository_owner }}/agrio-${{ matrix.service }}:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            ghcr.io/${{ steps.canon.outputs.owner }}/agrio-${{ matrix.service }}:latest
+            ghcr.io/${{ steps.canon.outputs.owner }}/agrio-${{ matrix.service }}:${{ github.sha }}
