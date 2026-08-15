@@ -12,10 +12,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
@@ -51,6 +53,9 @@ class ProcessedTelemetryConsumerTest {
     @MockBean
     private AlertWebSocketPublisher alertWebSocketPublisher;
 
+    @MockBean
+    private SimpMessagingTemplate messagingTemplate;
+
     @Test
     @DisplayName("Deve consumir uma mensagem valida e chamar o use case")
     void shouldConsumeValidMessageAndExecuteUseCase() {
@@ -67,6 +72,27 @@ class ProcessedTelemetryConsumerTest {
 
         verify(useCase, timeout(10_000).atLeastOnce())
                 .execute(any(TelemetryData.class));
+    }
+
+    @Test
+    @DisplayName("Deve re-broadcast no /topic/telemetry para o dashboard")
+    void shouldPublishToTelemetryTopicForDashboard() {
+        String payload = """
+                {
+                  "equipmentId": "TRAC-99",
+                  "timestamp": "2026-08-15T18:00:00Z",
+                  "gps": { "latitude": -21.17, "longitude": -47.81 },
+                  "metrics": { "engineTemp": 99.5, "rpm": 2000, "fuelLevel": 50.0, "speed": 12.0 }
+                }
+                """;
+
+        kafkaTemplate.send("agri.telemetry.processed", "TRAC-99", payload);
+
+        // The consumer fans the envelope out to the broker on the
+        // /topic/telemetry destination so the front-end dashboard
+        // can stream live values (Change 008).
+        verify(messagingTemplate, timeout(10_000).atLeastOnce())
+                .convertAndSend(eq("/topic/telemetry"), any(Object.class));
     }
 
     @Test

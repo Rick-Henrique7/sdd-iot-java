@@ -36,13 +36,13 @@ spring:
       routes:
         # 1) Auth — public
         - id: auth-service-public
-          uri: lb://auth-service
+          uri: http://auth-service:8083
           predicates:
             - Path=/api/v1/auth/**
 
         # 2) Fleet & mapping — protected
         - id: fleet-mapping-service
-          uri: lb://fleet-mapping-service
+          uri: http://fleet-mapping-service:8084
           predicates:
             - Path=/api/v1/fleet/**, /api/v1/mapping/**
           filters:
@@ -50,7 +50,7 @@ spring:
 
         # 3) Telemetry ingestion — protected
         - id: telemetry-service
-          uri: lb://telemetry-ingestion-service
+          uri: http://telemetry-ingestion-service:8081
           predicates:
             - Path=/api/v1/telemetry/**
           filters:
@@ -58,7 +58,7 @@ spring:
 
         # 4) Alert processing — protected (REST side; WS is future work)
         - id: alert-processing-service
-          uri: lb://alert-processing-service
+          uri: http://alert-processing-service:8082
           predicates:
             - Path=/api/v1/alerts/**
           filters:
