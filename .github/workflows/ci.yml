@@ -33,6 +33,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # `actions/checkout` on Linux does not preserve the executable
+      # bit from the git tree (Windows-side contributors typically
+      # commit `mvnw` without +x). Explicitly chmod it before use,
+      # so Dependabot and forks on Linux runners can run it too.
+      - name: Ensure mvnw is executable
+        run: chmod +x ./mvnw
+
       - name: Set up JDK 21 (Temurin)
         uses: actions/setup-java@v4
         with:
@@ -43,7 +50,7 @@ jobs:
       - name: Show toolchain versions
         run: |
           java -version
-          ./mvnw.cmd -v 2>/dev/null || ./mvnw -v
+          ./mvnw -v
 
       - name: Build & test
         # `verify` is heavier than `test` — it also runs package,

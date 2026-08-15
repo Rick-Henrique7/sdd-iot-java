@@ -1,0 +1,37 @@
+# ============================================================
+#  .gitattributes — normalises line endings and preserves
+#  executable bits across platforms.
+# ============================================================
+
+# Default: text files keep CRLF on Windows checkouts, LF on Linux
+# (matches what Java / Spring / Maven expect).
+*               text=auto
+
+# Maven Wrapper scripts MUST be executable on POSIX systems and
+# MUST have LF line endings. `actions/checkout` does not preserve
+# the file mode by default — the CI workflow also calls
+# `chmod +x ./mvnw` explicitly, but this attribute makes Git itself
+# set the bit.
+mvnw             text eol=lf
+mvnw.cmd         text eol=crlf
+
+# Shell scripts
+*.sh             text eol=lf
+
+# YAML and JSON
+*.yml            text eol=lf
+*.yaml           text eol=lf
+*.json           text eol=lf
+
+# Markdown
+*.md             text eol=lf
+
+# Docker
+Dockerfile       text eol=lf
+
+# Java/Kotlin
+*.java           text eol=lf
+*.kt             text eol=lf
+
+# PowerShell (Windows-only)
+*.ps1            text eol=crlf
