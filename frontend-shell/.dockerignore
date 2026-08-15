@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+coverage
+.git
+.gitignore
+.dockerignore
+Dockerfile
+README.md
+*.log
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx

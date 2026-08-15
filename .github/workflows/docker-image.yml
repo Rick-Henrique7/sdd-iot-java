@@ -37,6 +37,7 @@ jobs:
           - telemetry-ingestion-service
           - alert-processing-service
           - fleet-mapping-service
+          - frontend-shell
         include:
           - service: api-gateway
             dockerfile: api-gateway/Dockerfile
@@ -48,6 +49,8 @@ jobs:
             dockerfile: alert-processing-service/Dockerfile
           - service: fleet-mapping-service
             dockerfile: fleet-mapping-service/Dockerfile
+          - service: frontend-shell
+            dockerfile: frontend-shell/Dockerfile
     steps:
       - uses: actions/checkout@v4
 

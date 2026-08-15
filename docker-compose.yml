@@ -202,6 +202,23 @@ services:
     networks:
       - agrio-network
 
+  # ---- ENABLED in Change 007 ----
+  frontend-shell:
+    build:
+      context: .
+      dockerfile: frontend-shell/Dockerfile
+    container_name: agrio-frontend-shell
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://api-gateway:8080
+      - NODE_ENV=production
+    depends_on:
+      - api-gateway
+    restart: unless-stopped
+    networks:
+      - agrio-network
+
 volumes:
   postgres_data:
 
