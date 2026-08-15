@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: agrio-production
+  labels:
+    name: agrio-production
+    env: prod

@@ -1,0 +1,150 @@
+# ============================================================
+#  Agro-IoT Platform — local development stack
+#  Brings up: PostgreSQL, Redis, Kafka, Zookeeper, all
+#  microservices, the IoT simulator and the front-end shell.
+# ============================================================
+# Compose v2 no longer requires the `version` attribute; it is
+# ignored and triggers a warning if present.
+
+services:
+  # ===================== INFRASTRUCTURE =====================
+  postgres:
+    image: postgres:15-alpine
+    container_name: agrio-postgres
+    environment:
+      POSTGRES_DB: agrio_db
+      POSTGRES_USER: agrio_user
+      POSTGRES_PASSWORD: agrio_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agrio_user -d agrio_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agrio-network
+
+  redis:
+    image: redis:7.0-alpine
+    container_name: agrio-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - agrio-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: agrio-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      # Plain TCP check — `echo ruok | nc` is flaky on this image
+      test: ["CMD-SHELL", "nc -z localhost 2181 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+    networks:
+      - agrio-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: agrio-kafka
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server localhost:9092 --list || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+    networks:
+      - agrio-network
+
+  # ===================== MICROSERVICES =====================
+  # NOTE: only api-gateway is built in this compose. The other
+  # services are scaffolded (pom.xml + README) but their Dockerfile
+  # and source land in subsequent SDD changes (002..006). When each
+  # is implemented, uncomment its block here and add the build
+  # context + Dockerfile.
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: agrio-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - JWT_SECRET=${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250655368566D5971}
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - agrio-network
+
+  # ---- ENABLED in Change 002 ----
+  auth-service:
+    build:
+      context: .
+      dockerfile: auth-service/Dockerfile
+    container_name: agrio-auth-service
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/agrio_db?currentSchema=auth
+      - SPRING_DATASOURCE_USERNAME=agrio_auth
+      - SPRING_DATASOURCE_PASSWORD=agrio_auth_pwd
+      - JWT_SECRET=${JWT_SECRET:-404E635266556A586E3272357538782F413F4428472B4B6250655368566D5971}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - agrio-network
+
+  # ---- DISABLED until Change 003 (telemetry-ingestion-service) ----
+  # telemetry-ingestion-service:
+  #   build: { context: ., dockerfile: telemetry-ingestion-service/Dockerfile }
+  #   container_name: agrio-telemetry-ingestion
+  #   ...
+
+  # ---- DISABLED until Change 004 (alert-processing-service) ----
+  # alert-processing-service:
+  #   build: { context: ., dockerfile: alert-processing-service/Dockerfile }
+  #   ...
+
+  # ---- DISABLED until Change 005 (fleet-mapping-service) ----
+  # fleet-mapping-service:
+  #   build: { context: ., dockerfile: fleet-mapping-service/Dockerfile }
+  #   ...
+
+  # ---- DISABLED until Change 006 (iot-simulator-service) ----
+  # iot-simulator-service:
+  #   build: { context: ., dockerfile: iot-simulator-service/Dockerfile }
+  #   ...
+
+volumes:
+  postgres_data:
+
+networks:
+  agrio-network:
+    driver: bridge

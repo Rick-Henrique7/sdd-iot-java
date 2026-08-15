@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agrio-config
+  namespace: agrio-production
+data:
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-cluster-kafka-bootstrap:9092"
+  REDIS_HOST: "redis-master"
+  REDIS_PORT: "6379"
+  POSTGRES_URL: "jdbc:postgresql://postgres-postgresql:5432/agrio_db"
+  SPRING_PROFILES_ACTIVE: "prod"

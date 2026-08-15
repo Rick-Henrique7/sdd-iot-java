@@ -1,0 +1,100 @@
+# ============================================================
+#  auth-service — default configuration
+#  Local developer profile uses H2 in-memory. For containerised
+#  environments, activate the `docker` profile to switch to the
+#  PostgreSQL container and the `auth` schema.
+# ============================================================
+
+server:
+  port: 8083
+  shutdown: graceful
+
+spring:
+  application:
+    name: auth-service
+  main:
+    banner-mode: off
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+  h2:
+    console:
+      enabled: false
+
+# ---------- JWT (shared with api-gateway) ----------
+jwt:
+  secret: ${JWT_SECRET:dev-secret-please-replace-with-32-bytes-min!!}
+  expiration-ms: 43200000   # 12 hours
+
+# ---------- Actuator ----------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+# ---------- Logging ----------
+logging:
+  level:
+    root: INFO
+    com.johndeere.agrio: INFO
+    org.springframework.security: WARN
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/agrio_db?currentSchema=auth}
+    username: ${SPRING_DATASOURCE_USERNAME:agrio_auth}
+    password: ${SPRING_DATASOURCE_PASSWORD:agrio_auth_pwd}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+  flyway:
+    enabled: false
+  h2:
+    console:
+      enabled: false
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250655368566D5971}
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    url: jdbc:h2:mem:authdb-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: false
+
+jwt:
+  secret: test-secret-test-secret-test-secret-12345678
+  expiration-ms: 43200000

@@ -1,0 +1,72 @@
+# ============================================================
+#  Agro-IoT Platform .gitignore
+#  Generated for a multi-module Spring Boot 3 / Java 17 /
+#  Next.js monorepo.
+# ============================================================
+
+# ----- Maven / Java -----
+target/
+build/
+out/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+hs_err_pid*
+replay_pid*
+.classpath
+.project
+.settings/
+.factorypath
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+
+# ----- Node / Next.js -----
+node_modules/
+.next/
+out/
+dist/
+.turbo/
+.parcel-cache/
+.npm
+.eslintcache
+.stylelintcache
+coverage/
+.next-env.d.ts
+next-env.d.ts
+
+# ----- Environment & Secrets -----
+.env
+.env.local
+.env.*.local
+secrets/
+*.pem
+*.key
+*.p12
+*.pfx
+keystore.*
+
+# ----- Docker -----
+docker-compose.override.yml
+.docker/
+
+# ----- OS / Misc -----
+Thumbs.db
+.DS_Store
+desktop.ini
+$RECYCLE.BIN/
+
+# ----- Logs -----
+logs/
+*.log
+*.log.*
+
+# ----- Test reports -----
+test-output/
+surefire-reports/
+failsafe-reports/
+jacoco.exec

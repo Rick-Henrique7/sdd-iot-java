@@ -1,0 +1,40 @@
+# Diretrizes de Governança, Segurança e Limites de Agentes de IA
+
+Este documento estabelece as regras invioláveis de segurança, limitações de automação e diretrizes de governança para o ecossistema da **Plataforma Agro-IoT Integrada**. Ele serve como um contrato de restrição estrito para desenvolvedores e Agentes Geradores de Código baseados em Inteligência Artificial (ex: Cursor, GitHub Copilot, ChatGPT).
+
+---
+
+## 1. Limites Estritos para Agentes de IA (Geração de Código)
+
+Os assistentes e geradores de código por IA devem obedecer rigidamente aos seguintes limites operacionais ao propor refatorações ou novos recursos:
+
+### 1.1. Inviolabilidade da Arquitetura
+* **Proibido Alterar Contratos DTO:** A IA não pode alterar os nomes ou tipos de campos nos DTOs de entrada/saída REST ou schemas do Apache Kafka sem aprovação explícita em documentação.
+* **Respeito à Clean Architecture:** É estritamente proibido importar dependências de infraestrutura (como Spring, JPA/Hibernate, Kafka) dentro das classes da camada de Domínio Puro (`domain/model` e `domain/service`).
+* **Injeção de Bibliotecas Não Homologadas:** Proibido adicionar novas dependências nos arquivos `pom.xml` ou `package.json` sem validação prévia de vulnerabilidades.
+
+### 1.2. Blindagem do Design System (Front-end)
+* **Zero Emojis:** Proibido o uso de emojis (ex: `🚜`, `⚠️`) em qualquer rótulo, botão, modal ou notificação de UI. Utilize exclusivamente a biblioteca `lucide-react`.
+* **Inviolabilidade do Texto:** Proibido aplicar estilos de cores ou negrito fragmentados no meio ou final de títulos. Títulos e cabeçalhos devem ser renderizados em cor sólida e uniforme (`#F8FAFC`).
+* **Preservação da Paleta de Cores Enterprise:** Não utilizar pretos puros (`#000000`). Manter a paleta oficial em modo escuro baseada em Slate (`#0F172A` e `#1E293B`).
+
+---
+
+## 2. Segurança Operacional e Regra *Human-in-the-Loop*
+
+Embora a plataforma processe métricas de telemetria IoT e avalie anomalias em tempo real via motor de regras, aplicam-se as seguintes restrições de controle físico:
+
+* **Proibição de Atuação Remota Autônoma:** O sistema é estritamente informativo, preditivo e de monitoramento. Nenhum serviço do back-end (mesmo via disparo de alerta crítico) possui permissão para enviar comandos de atuação direta no atuador do equipamento agrícola (ex: desligar motor, alterar rotação ou acionar travamento de freios remotamente).
+* **Intervenção Humana Obrigatória (*Human-in-the-Loop*):** Todas as ações corretivas decorrentes de alertas operacionais (ex: parada para manutenção, ajuste de vazão de pulverização) dependem exclusivamente da decisão e acionamento manual do operador ou agrônomo responsável.
+
+---
+
+## 3. Diretrizes de Segurança da Informação & Privacidade
+
+### 3.1. Gestão de Credenciais e Segredos
+* **Zero Hardcoding:** É expressamente proibido inserir credenciais, chaves privadas, senhas de banco de dados ou segredos do JWT (`jwt.secret`) diretamente no código fonte. Todos os segredos devem ser injetados via Variáveis de Ambiente ou Kubernetes Secrets.
+* **Sanitização de Logs:** Os logs da aplicação (Logback / Slf4j) não devem registrar informações pessoais identificáveis (PII) nem dados sensíveis de autenticação (como senhas brutas ou tokens JWT completos).
+
+### 3.2. Isolamento de Dados e Tráfego
+* **Comunicação Criptografada:** Em ambientes de produção, todo o tráfego HTTP deve ser forçado para HTTPS/TLS via Spring API Gateway, e as conexões WebSocket devem utilizar `wss://`.
+* **Isolamento de Schemas:** Cada microsserviço deve operar estritamente dentro de seu schema PostgreSQL isolado (`auth`, `fleet`, `telemetry`), utilizando usuários de banco de dados com permissões restritas ao seu respectivo escopo.

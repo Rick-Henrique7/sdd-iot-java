@@ -1,0 +1,96 @@
+# ============================================================
+#  Agro-IoT Platform — CI workflow
+#  Runs on every push to main and on every pull request.
+#
+#  Pipeline (per module that is touched by the PR):
+#    1. Setup JDK 21 (Temurin) and cache Maven dependencies
+#    2. ./mvnw -B verify        (compile + tests + package)
+#    3. docker compose build    (only on main, not on PRs)
+# ============================================================
+
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+# Cancel in-progress runs for the same branch / PR.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # -----------------------------------------------------------------
+  # Job 1: build + test every module on every PR
+  # -----------------------------------------------------------------
+  build:
+    name: Build & test (Maven)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+
+      - name: Show toolchain versions
+        run: |
+          java -version
+          ./mvnw.cmd -v 2>/dev/null || ./mvnw -v
+
+      - name: Build & test
+        # `verify` is heavier than `test` — it also runs package,
+        # integration-test, and (eventually) any fail-safe goals.
+        # The flag `-fae` (fail at end) keeps going so we see all
+        # module failures in a single run.
+        run: ./mvnw -B -fae verify
+
+      - name: Upload surefire reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: '**/target/surefire-reports/*.txt'
+          if-no-files-found: ignore
+
+  # -----------------------------------------------------------------
+  # Job 2: lint the changes/ folder (proposal/spec/design/tasks)
+  # -----------------------------------------------------------------
+  validate-sdd:
+    name: Validate SDD artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Every active change folder MUST have the 4 artifacts
+        run: |
+          set -e
+          changes_dir="changes"
+          if [ ! -d "$changes_dir" ]; then
+            echo "No $changes_dir/ directory — nothing to validate."
+            exit 0
+          fi
+          missing=0
+          for d in "$changes_dir"/[0-9]*-*; do
+            [ -d "$d" ] || continue
+            for f in proposal.md spec.md design.md tasks.md; do
+              if [ ! -f "$d/$f" ]; then
+                echo "::error file=$d/$f::Missing SDD artifact"
+                missing=$((missing+1))
+              fi
+            done
+          done
+          if [ "$missing" -gt 0 ]; then
+            echo "::error::$missing SDD artifact(s) missing."
+            exit 1
+          fi
+          echo "All active changes have the 4 SDD artifacts."

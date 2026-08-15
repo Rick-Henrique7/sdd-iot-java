@@ -1,0 +1,44 @@
+# ============================================================
+#  Dependabot — keeps Maven, Docker base images, and GitHub
+#  Actions up to date. Each Monday, opens a single grouped PR.
+# ============================================================
+
+version: 2
+
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      spring-and-deps:
+        patterns:
+          - "org.springframework*"
+          - "io.jsonwebtoken*"
+          - "io.github.resilience4j*"
+          - "org.testcontainers*"
+          - "org.postgresql*"
+          - "com.h2database*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    groups:
+      actions:
+        patterns: ["*"]
+
+  - package-ecosystem: "docker"
+    directory: "/api-gateway"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+
+  - package-ecosystem: "docker"
+    directory: "/auth-service"
+    schedule:
+      interval: "weekly"
+      day: "monday"

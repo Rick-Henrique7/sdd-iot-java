@@ -1,0 +1,33 @@
+# ============================================================
+#  CODEOWNERS — every file/folder MUST be reviewed by the listed
+#  owner(s) before a PR can be merged. GitHub auto-assigns them.
+#
+#  Replace the placeholder handles below with your team's GitHub
+#  usernames (or @org/team handles).
+# ============================================================
+
+# Default owner for everything
+*                          @agrio-platform/core
+
+# Gateway + cross-cutting
+/api-gateway/              @agrio-platform/core
+/auth-service/             @agrio-platform/core
+/pom.xml                   @agrio-platform/core
+/docker-compose.yml        @agrio-platform/core
+/init.sql                  @agrio-platform/core
+
+# Per-service
+/telemetry-ingestion-service/   @agrio-platform/telemetry
+/alert-processing-service/      @agrio-platform/alerts
+/fleet-mapping-service/         @agrio-platform/fleet
+/iot-simulator-service/         @agrio-platform/simulator
+
+# Specs (anyone proposing a change must touch these)
+/docs/                     @agrio-platform/core
+/changes/                  @agrio-platform/core
+
+# Infra & deployment
+/k8s/                      @agrio-platform/platform
+
+# CI / GitHub plumbing
+/.github/                  @agrio-platform/platform

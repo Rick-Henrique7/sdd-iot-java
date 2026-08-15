@@ -1,0 +1,13 @@
+{
+  "name": "iot-simulator-service",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Node.js/TypeScript IoT telemetry simulator. Implemented in Change 006 — this package.json is the module placeholder.",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
