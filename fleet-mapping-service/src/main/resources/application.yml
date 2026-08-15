@@ -1,0 +1,79 @@
+# ============================================================
+#  fleet-mapping-service — Spring Boot configuration
+# ============================================================
+
+server:
+  port: 8084
+  shutdown: graceful
+
+spring:
+  application:
+    name: fleet-mapping-service
+  main:
+    banner-mode: off
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+# ---------- Actuator ----------
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when-authorized
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+
+# ---------- Logging ----------
+logging:
+  level:
+    root: INFO
+    com.johndeere.agrio: INFO
+
+---
+spring:
+  config:
+    activate:
+      on-profile: docker
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/agrio_db?currentSchema=fleet}
+    username: ${SPRING_DATASOURCE_USERNAME:agrio_fleet}
+    password: ${SPRING_DATASOURCE_PASSWORD:agrio_fleet_pwd}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  flyway:
+    enabled: false
+
+---
+spring:
+  config:
+    activate:
+      on-profile: test
+  datasource:
+    # Same H2 trick as the other services: H2 in PostgreSQL mode
+    # uppercases unquoted identifiers, so we INIT the schema
+    # under its uppercase form before Hibernate touches it.
+    url: jdbc:h2:mem:fleet-test;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;INIT=CREATE SCHEMA IF NOT EXISTS FLEET
+    username: sa
+    password: ""
+    driver-class-name: org.h2.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop
+  h2:
+    console:
+      enabled: false

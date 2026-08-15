@@ -164,10 +164,24 @@ services:
     networks:
       - agrio-network
 
-  # ---- DISABLED until Change 005 (fleet-mapping-service) ----
-  # fleet-mapping-service:
-  #   build: { context: ., dockerfile: fleet-mapping-service/Dockerfile }
-  #   ...
+  # ---- ENABLED in Change 005 ----
+  fleet-mapping-service:
+    build:
+      context: .
+      dockerfile: fleet-mapping-service/Dockerfile
+    container_name: agrio-fleet-mapping
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/agrio_db?currentSchema=fleet
+      - SPRING_DATASOURCE_USERNAME=agrio_fleet
+      - SPRING_DATASOURCE_PASSWORD=agrio_fleet_pwd
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - agrio-network
 
   # ---- DISABLED until Change 006 (iot-simulator-service) ----
   # iot-simulator-service:
