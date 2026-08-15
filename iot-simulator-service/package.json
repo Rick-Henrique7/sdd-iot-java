@@ -2,12 +2,23 @@
   "name": "iot-simulator-service",
   "version": "1.0.0",
   "private": true,
-  "description": "Node.js/TypeScript IoT telemetry simulator. Implemented in Change 006 — this package.json is the module placeholder.",
+  "description": "Node.js / TypeScript IoT telemetry simulator. Publishes synthetic telemetry to agri.telemetry.raw with stochastic anomaly injection. Implemented in Change 006.",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "node --test --import tsx src/generator/telemetryGenerator.test.ts",
+    "test:build": "tsc --noEmit"
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "kafkajs": "^2.2.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.4"
   }
 }

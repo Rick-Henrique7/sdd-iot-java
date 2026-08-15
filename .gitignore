@@ -30,6 +30,8 @@ node_modules/
 .next/
 out/
 dist/
+dist.old/
+dist.old.trash/
 .turbo/
 .parcel-cache/
 .npm

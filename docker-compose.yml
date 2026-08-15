@@ -183,10 +183,24 @@ services:
     networks:
       - agrio-network
 
-  # ---- DISABLED until Change 006 (iot-simulator-service) ----
-  # iot-simulator-service:
-  #   build: { context: ., dockerfile: iot-simulator-service/Dockerfile }
-  #   ...
+  # ---- ENABLED in Change 006 ----
+  iot-simulator-service:
+    build:
+      context: .
+      dockerfile: iot-simulator-service/Dockerfile
+    container_name: agrio-iot-simulator
+    environment:
+      - KAFKA_BROKER=kafka:29092
+      - KAFKA_TOPIC=agri.telemetry.raw
+      - SIM_INTERVAL_MS=1000
+      # Silence KafkaJS v2 partitioner migration warning.
+      - KAFKAJS_NO_PARTITIONER_WARNING=1
+    depends_on:
+      kafka:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - agrio-network
 
 volumes:
   postgres_data:
