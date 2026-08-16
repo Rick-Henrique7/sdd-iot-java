@@ -44,9 +44,9 @@ export function Fleet() {
             <Truck size={12} aria-hidden />
             Change 009
           </span>
-          <h1 className="text-h1 font-semibold text-fg">Gestao de Frota</h1>
+          <h1 className="text-h1 font-semibold text-fg">Gestão de Frota</h1>
           <p className="text-sm text-fg-muted">
-            Cadastro, edicao e alteracao de status dos equipamentos. O CRUD fala com o
+            Cadastro, edição e alteração de status dos equipamentos. O CRUD fala com o
             <code className="ml-1 rounded bg-card-2 px-1.5 py-0.5 font-mono text-[0.75rem] text-fg">fleet-mapping-service</code>.
           </p>
         </div>

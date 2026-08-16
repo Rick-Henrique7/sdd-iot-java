@@ -53,7 +53,7 @@ describe('RegisterModal', () => {
     fireEvent.change(screen.getByLabelText('ID'), { target: { value: 'TRAC-NEW-001' } });
     fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Trator Novo' } });
     fireEvent.change(screen.getByLabelText('Modelo'), { target: { value: '7230J' } });
-    fireEvent.change(screen.getByLabelText('Numero de serie'), {
+    fireEvent.change(screen.getByLabelText('Número de série'), {
       target: { value: 'JD7230J-NEW-001' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
@@ -88,7 +88,7 @@ describe('RegisterModal', () => {
     fireEvent.change(screen.getByLabelText('ID'), { target: { value: 'TRAC-DUP' } });
     fireEvent.change(screen.getByLabelText('Nome'), { target: { value: 'Dup' } });
     fireEvent.change(screen.getByLabelText('Modelo'), { target: { value: 'M' } });
-    fireEvent.change(screen.getByLabelText('Numero de serie'), { target: { value: 'SN' } });
+    fireEvent.change(screen.getByLabelText('Número de série'), { target: { value: 'SN' } });
     fireEvent.click(screen.getByRole('button', { name: 'Salvar' }));
 
     await waitFor(() => {

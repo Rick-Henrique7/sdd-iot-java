@@ -33,14 +33,14 @@ export function ThresholdForm({ onApplied }: ThresholdFormProps) {
     setTouched(true);
     if (!isValid) return;
     setThresholds(form);
-    onApplied('Limites aplicados nesta sessao.');
+    onApplied('Limites aplicados nesta sessão.');
   }
 
   function handleReset() {
     resetThresholds();
     setForm(DEFAULT_THRESHOLDS);
     setTouched(false);
-    onApplied('Limites restaurados para o padrao.');
+    onApplied('Limites restaurados para o padrão.');
   }
 
   function bind<K extends keyof Thresholds>(key: K) {
@@ -102,8 +102,8 @@ export function ThresholdForm({ onApplied }: ThresholdFormProps) {
       </div>
 
       <p className="text-[0.6875rem] text-fg-muted">
-        Limites serao persistidos no backend em uma change futura.
-        Por enquanto, ficam ativos apenas nesta sessao.
+        Limites serão persistidos no backend em uma change futura.
+        Por enquanto, ficam ativos apenas nesta sessão.
       </p>
 
       <div className="flex items-center gap-2">
@@ -111,7 +111,7 @@ export function ThresholdForm({ onApplied }: ThresholdFormProps) {
           <Save size={14} /> Aplicar
         </Button>
         <Button type="button" variant="secondary" size="sm" onClick={handleReset}>
-          <RotateCcw size={14} /> Restaurar padroes
+          <RotateCcw size={14} /> Restaurar padrões
         </Button>
       </div>
     </form>

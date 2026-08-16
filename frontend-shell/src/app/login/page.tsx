@@ -32,7 +32,7 @@ export default function LoginPage() {
           <AuthForm mode="login" />
 
           <p className="mt-6 text-center text-xs text-fg-muted">
-            Esqueceu a senha? Fale com o administrador da sua operacao.
+            Esqueceu a senha? Fale com o administrador da sua operação.
           </p>
         </div>
       </section>

@@ -20,7 +20,7 @@ function DashboardImpl() {
         </span>
         <h1 className="text-h1 font-semibold text-fg">Dashboard</h1>
         <p className="text-sm text-fg-muted">
-          Saude geral da frota, telemetria em tempo real e feed de alertas.
+          Saúde geral da frota, telemetria em tempo real e feed de alertas.
         </p>
       </header>
 

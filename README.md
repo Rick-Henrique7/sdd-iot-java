@@ -3,14 +3,18 @@
 > **Spec-Driven Development (SDD) reference implementation of an
 > enterprise agricultural IoT monitoring platform** — event-driven
 > microservices on Spring Boot 3.3.4 / Java 17, with a Next.js 14
-> micro-frontend. Eleven SDD changes shipped end-to-end: six
-> backend services, one IoT simulator, four frontend modules.
+> micro-frontend. Thirteen SDD changes shipped end-to-end: six
+> backend services, one IoT simulator, four frontend modules, plus
+> two documentation / polish changes.
 
 [![CI](https://img.shields.io/badge/CI-passing-367C2B)](./.github/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](./LICENSE)
 [![Java](https://img.shields.io/badge/Java-17%20%2F%2021-ED8B00)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.3.4-6DB33F)](https://spring.io/projects/spring-boot)
 [![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![Docker](https://img.shields.io/badge/Docker-24%2B-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-7.4-231F20?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![SDD](https://img.shields.io/badge/workflow-Spec--Driven-FFDE00)](./CONTRIBUTING.md)
 
 ---
@@ -124,21 +128,23 @@ Para o fluxo de dados detalhado e o racional arquitetural, veja
 
 ---
 
-## 3. Tech stack (atual, pos-Change 011)
+## 3. Tech stack (atual, pos-Change 013)
 
-| Camada        | Tecnologia                                                                                                |
-|---------------|------------------------------------------------------------------------------------------------------------|
-| Front-end     | Next.js 14 (App Router, RSC), React 18, TypeScript, Tailwind CSS, Zustand, React Query, @stomp/stompjs    |
-| Mapas         | react-leaflet 4 + leaflet 1.9 + leaflet.heat 0.2 (com dynamic ssr:false para isolar o bundle)             |
-| Edge          | Spring Cloud Gateway (WebFlux + Netty), filtro JWT customizado, CORS centralizado                          |
-| Backend       | Spring Boot 3.3.4, Java 17, Clean Architecture (domain sem Spring/JPA/Kafka), JUnit 5 + H2 + @EmbeddedKafka |
-| Mensageria    | Apache Kafka 7.4 + Zookeeper 7.4, topicos `agri.telemetry.raw` e `agri.telemetry.processed`                 |
-| Tempo real    | STOMP / WebSocket plain (sem SockJS) publicado pelo `alert-processing-service`                            |
-| Storage       | PostgreSQL 15 (schemas isolados por bounded context: `auth`, `fleet`, `telemetry`, `alert`), Redis 7       |
-| Auth          | JWT HS256 (JJWT), BCrypt, 3 perfis: `ROLE_OPERADOR` / `ROLE_AGRONOMO` / `ROLE_GESTOR`                     |
-| Front-end dev | Vitest + @testing-library + happy-dom, ESLint (next/core-web-vitals)                                       |
-| IaC           | Docker Compose (local), GitHub Actions (CI em `mvnw verify` + `npm test` + `npm run build`)               |
-| Documentacao  | Mudancas estruturadas em `changes/NNN-name/{proposal,spec,design,tasks}.md`                               |
+| Camada              | Tecnologia                                                                                                | Uso                                                                                          |
+|---------------------|------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
+| Front-end           | Next.js 14 (App Router, RSC), React 18, TypeScript, Tailwind CSS, Zustand, React Query, @stomp/stompjs    | Shell app + 4 modulos operacionais (dashboard, mapping, fleet, settings).                     |
+| Mapas / geolocal.   | react-leaflet 4 + leaflet 1.9 + leaflet.heat 0.2 (com dynamic ssr:false para isolar o bundle)             | `/mapping` — marcadores de trator, poligono de talhao, heatmap, popover com telemetria ao vivo. |
+| Edge / API Gateway  | Spring Cloud Gateway (WebFlux + Netty), filtro JWT customizado, CORS centralizado                          | Unica porta de entrada do ecossistema. Forward + auth-cross-cutting.                          |
+| Backend (5 servicos)| Spring Boot 3.3.4, Java 17, **Clean Architecture** (domain sem Spring/JPA/Kafka), **Clean Code** (SRP, funcoes pequenas, sem comentarios narrativos) | 5 microservicos: `auth`, `telemetry-ingestion`, `alert-processing`, `fleet-mapping`, `iot-simulator` (Node). |
+| Mensageria          | Apache Kafka 7.4 + Zookeeper 7.4, topicos `agri.telemetry.raw` e `agri.telemetry.processed`                 | Event-driven entre `iot-simulator` → `telemetry-ingestion` → `alert-processing`.            |
+| Tempo real          | STOMP / WebSocket plain (sem SockJS) publicado pelo `alert-processing-service`                            | `/topic/telemetry` + `/topic/alerts` consumidos pelo dashboard.                              |
+| Storage             | PostgreSQL 15 (schemas isolados por bounded context: `auth`, `fleet`, `telemetry`, `alert`), Redis 7       | Persistencia relacional + cache de ultimo estado por equipamento.                            |
+| Auth                | JWT HS256 (JJWT), BCrypt, 3 perfis: `ROLE_OPERADOR` / `ROLE_AGRONOMO` / `ROLE_GESTOR`                     | `auth-service` emite, `api-gateway` valida na borda, frontend decodifica so para UI.         |
+| Front-end dev       | Vitest + @testing-library + happy-dom, ESLint (next/core-web-vitals)                                       | 52 testes, lint obrigatorio, build estatico.                                                  |
+| Back-end dev        | JUnit 5 + H2 (modo Postgres) + @EmbeddedKafka                                                              | 45 testes, broker in-process.                                                                 |
+| Containerizacao     | Docker + Docker Compose (multi-stage build)                                                                | 11 containers: 4 infra (postgres, redis, zookeeper, kafka) + 6 servicos + 1 frontend.       |
+| Registry / CI       | GitHub Container Registry (GHCR) + GitHub Actions (`mvnw verify` + `npm test` + `npm run build`)           | Imagens publicadas em todo push para `main`; 3 jobs (Validate SDD + Maven + frontend).       |
+| Documentacao        | Mudancas estruturadas em `changes/NNN-name/{proposal,spec,design,tasks}.md`                               | Cada mudanca tem 4 artefatos SDD + archive apos merge.                                       |
 
 > Diferencas desta lista contra o `README.md` legado:
 > - **Sem MUI** — Tailwind puro e componentes proprios.
@@ -149,7 +155,7 @@ Para o fluxo de dados detalhado e o racional arquitetural, veja
 
 ---
 
-## 4. As 11 changes entregues
+## 4. As 13 changes entregues
 
 Cada change vive em `changes/NNN-short-name/` (proposta + spec + design + tasks).
 Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
@@ -165,7 +171,7 @@ Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
 | 005| `fleet-mapping-service`                  | merged  | CRUD de equipamentos, poligonos de talhoes (read), heatmap deterministico por `fieldId`, 12 testes.                                            |
 | 006| `iot-simulator-service`                  | merged  | Node.js 20 + KafkaJS, 3 maquinas fake, 1Hz, 5% de anomalia, fecha o loop end-to-end.                                                            |
 
-### Frontend (Changes 007–011)
+### Frontend (Changes 007–011) + Docs (012–013)
 
 | #  | Change                                  | Status  | Resumo                                                                                                                                            |
 |----|------------------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -174,6 +180,8 @@ Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
 | 009| `frontend-mapping` + `frontend-fleet`    | merged  | Leaflet + heatmap, widget Open-Meteo, 3 talhoes seed, popover por trator, modal de cadastro, toggle de status, 30 testes.                         |
 | 010| `frontend-settings`                      | merged  | `ProfileCard` (read-only), `ThresholdForm` (localStorage via `preferencesStore`), `SessionCard` (JWT countdown), `AboutCard`, 47 testes.         |
 | 011| `frontend-role-enum-fix` (hotfix)        | merged  | Renomeia `UserRole` para o enum do backend (`ROLE_*`), expoe `ROLE_GESTOR` no select, novo helper `formatRole`, 52 testes.                       |
+| 012| `readme-consolidation`                   | merged  | Reescreve o README raiz com 11 secoes, tabela das 11 changes, mapa de URLs, mapa do `docs/`, e o stack correto (sem MUI/SockJS/Testcontainers).   |
+| 013| `frontend-polish-and-readme`             | merged  | ~80 correcoes de acentuacao PT-BR no front (Visualizacao, Manutencao, sessao, etc.), layout do `/mapping` (gap do legend, min-h do mapa, largura do widget), README v2 com Docker, Kafka, Postgres, Clean Code e secao de testes. |
 
 > O sistema ja nasce com **45 testes backend** (JUnit 5) + **52 testes frontend**
 > (Vitest) verdes no CI, em 3 jobs: `Validate SDD artifacts`, `Build & test (Maven)`,
@@ -229,10 +237,10 @@ para navegar:
   paleta de cores, tipografia, criterios de UX agricola).
 
 ### `changes/`
-- 7 mudancas ativas em `changes/001-…` ate `changes/007-…` (proposal +
+- 5 mudancas ativas em `changes/008-…` ate `changes/012-…` (proposal +
   spec + design + tasks).
-- 4 mudancas arquivadas em `changes/archive/2026-08-15-008-…` ate
-  `changes/archive/2026-08-15-011-…`.
+- 5 mudancas arquivadas em `changes/archive/2026-08-15-008-…` ate
+  `changes/archive/2026-08-15-013-…`.
 - Cada `proposal.md` explica o **porque**; `spec.md` traz os
   requisitos; `design.md` detalha decisoes tecnicas; `tasks.md` lista
   o checklist de implementacao.
@@ -317,6 +325,35 @@ Fluxo canonico:
 > Veja [`CONTRIBUTING.md`](./CONTRIBUTING.md) para o checklist completo,
 > as politicas de revisao e o codigo de conduta.
 
+### 7.1. Methodology (como o codigo e escrito, alem do SDD)
+
+Alem do workflow SDD, o codigo segue cinco disciplinas que se aplicam
+a qualquer camada:
+
+- **Clean Code (Robert C. Martin)** — funcoes pequenas (< 30 linhas),
+  nomes que dizem o que fazem (sem comentarios narrativos), zero
+  duplicacao, early returns em vez de `else` aninhados, sem numeros
+  magicos. Em PT-BR para o usuario, em ingles para o codigo.
+- **Clean Architecture** — a camada `domain/` de cada servico Java
+  nao importa Spring, JPA, Kafka, JJWT ou qualquer framework. Use
+  cases e entidades sao POJOs puros. Toda a persistencia, mensageria
+  e HTTP fica em `infrastructure/`.
+- **Trunk-based branching** — branch de curta duracao por change
+  (`NNN-name`), PR contra `main`, squash-merge, archive. Nenhum
+  `develop` / `release` / `hotfix` (Gitflow nao e usado aqui).
+- **Conventional commits** — `feat:`, `fix:`, `docs:`, `chore:`,
+  `refactor:`, `test:`. O CI quebra se o titulo do PR nao casa
+  com um desses prefixos.
+- **Per-component front pattern** — `panel` (wrapper base), `HOC`
+  (ciclo de vida transversal, ex.: `withAuth`, `withTelemetryStream`),
+  `Zustand` (estado de UI/WebSocket), `React Query` (cache REST e
+  retries), `Tailwind` (estilizacao, sem CSS-in-JS). Sem `useEffect`
+  sem `cleanup`. Sem `setInterval` sem `clearInterval`.
+
+> As regras detalhadas estao em
+> [`docs/backend/guidelines-and-governance/`](./docs/backend/guidelines-and-governance)
+> e [`docs/frontend/struct-frontend.md`](./docs/frontend/struct-frontend.md).
+
 ---
 
 ## 8. Build & test local (sem Docker)
@@ -341,6 +378,45 @@ npm run build     # 10 rotas, 87.7 KB shared
 > O `mvnw.cmd` no Windows ja esta fixado para
 > `https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip`
 > (espelha o `settings.xml` corporativo, se houver).
+
+### 8.1. How to test (correr os 97 testes do projeto)
+
+O projeto nasce com **97 testes** verdes, distribuidos em 2 suites
+independentes:
+
+| Suite                       | Ferramenta              | Total  | Comando                              |
+|-----------------------------|--------------------------|--------|--------------------------------------|
+| Back-end (5 servicos)       | JUnit 5 + H2 + @EmbeddedKafka | 45/45 | `.\mvnw.cmd -B verify`               |
+| Front-end (`frontend-shell`) | Vitest + happy-dom       | 52/52  | `cd frontend-shell && npm test`      |
+
+Coberturas ja garantidas:
+
+- **API Gateway** — `401` sem token, `401` com token malformado, contrato
+  JWT com 5 claims.
+- **Auth Service** — `POST /register` (happy path + email duplicado +
+  role invalida), `POST /login` (credenciais OK / erradas), schema
+  isolado `agrio_auth`, BCrypt.
+- **Telemetry Ingestion** — `@KafkaListener` consome o envelope bruto,
+  atualiza Redis latest-state, persiste em `telemetry` e republica.
+- **Alert Processing** — regras `engineTemp > 95`, `rpm > 2500`,
+  persistencia em `alert`, publicacao STOMP em `/topic/telemetry` e
+  `/topic/alerts`.
+- **Fleet Mapping** — CRUD de equipamentos, GET de heatmaps por
+  `fieldId`, validacao de DTO.
+- **Front-end** — stores (auth/telemetry/preferences), HOC de WS
+  (com fake client), hooks de REST (useHeatmap), modulos (RegisterModal
+  com happy path + erro do backend), helpers puros (jwt, formatRole,
+  thresholdValidation, weatherApi), interceptor JWT do axios.
+
+Para rodar uma unica classe de teste:
+
+```powershell
+# Back-end: so o auth-service
+.\mvnw.cmd -pl auth-service -am test -Dtest=AuthServiceTest
+
+# Front-end: so o RegisterModal
+cd frontend-shell; npx vitest run src/modules/fleet/RegisterModal.test.tsx
+```
 
 ---
 

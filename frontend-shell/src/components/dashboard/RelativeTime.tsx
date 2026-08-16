@@ -34,11 +34,11 @@ export function RelativeTime({ iso, refreshMs = 5_000 }: RelativeTimeProps) {
 function formatRelative(ms: number): string {
   const s = Math.floor(ms / 1000);
   if (s < 5) return 'agora';
-  if (s < 60) return `hace ${s} s`;
+  if (s < 60) return `há ${s} s`;
   const m = Math.floor(s / 60);
-  if (m < 60) return `hace ${m} min`;
+  if (m < 60) return `há ${m} min`;
   const h = Math.floor(m / 60);
-  if (h < 24) return `hace ${h} h`;
+  if (h < 24) return `há ${h} h`;
   const d = Math.floor(h / 24);
-  return `hace ${d} d`;
+  return `há ${d} d`;
 }

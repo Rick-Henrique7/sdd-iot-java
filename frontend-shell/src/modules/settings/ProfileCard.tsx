@@ -46,7 +46,7 @@ export function ProfileCard() {
         <dd className="text-fg">{formatDate(claims?.iat)}</dd>
       </dl>
       <p className="text-[0.6875rem] text-fg-muted">
-        Edicao de perfil chega em uma change futura.
+        Edição de perfil chega em uma change futura.
       </p>
     </div>
   );

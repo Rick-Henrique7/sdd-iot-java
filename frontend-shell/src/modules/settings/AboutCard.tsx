@@ -7,7 +7,7 @@ interface AboutCardProps {
 
 const DOCS: { label: string; href: string }[] = [
   { label: 'Blueprint de UI', href: 'https://github.com/Rick-Henrique7/sdd-iot-java/blob/main/docs/frontend/blueprint.md' },
-  { label: 'Estrutura tecnica', href: 'https://github.com/Rick-Henrique7/sdd-iot-java/blob/main/docs/frontend/struct-frontend.md' },
+  { label: 'Estrutura técnica', href: 'https://github.com/Rick-Henrique7/sdd-iot-java/blob/main/docs/frontend/struct-frontend.md' },
   { label: 'Repositorio', href: 'https://github.com/Rick-Henrique7/sdd-iot-java' },
 ];
 

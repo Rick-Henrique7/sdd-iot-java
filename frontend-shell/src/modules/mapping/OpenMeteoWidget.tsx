@@ -51,7 +51,7 @@ export function OpenMeteoWidget({ lat, lng }: OpenMeteoWidgetProps) {
   }, [lat, lng]);
 
   return (
-    <div className="panel w-64 space-y-2 p-3 text-xs">
+    <div className="panel w-56 space-y-2 p-3 text-xs">
       <header className="flex items-center justify-between">
         <span className="text-h2 uppercase tracking-wider text-fg-muted">Clima agora</span>
         <a
@@ -67,7 +67,7 @@ export function OpenMeteoWidget({ lat, lng }: OpenMeteoWidgetProps) {
         <p className="text-fg-muted">Carregando…</p>
       )}
       {state.kind === 'error' && (
-        <p className="text-fg-muted">Clima indisponivel.</p>
+        <p className="text-fg-muted">Clima indisponível.</p>
       )}
       {state.kind === 'ready' && (
         <div className="grid grid-cols-3 gap-2">

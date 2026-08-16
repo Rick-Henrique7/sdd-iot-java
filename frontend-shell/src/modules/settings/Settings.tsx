@@ -24,9 +24,9 @@ export function Settings() {
           <SettingsIcon size={12} aria-hidden />
           Change 010
         </span>
-        <h1 className="text-h1 font-semibold text-fg">Configuracoes</h1>
+        <h1 className="text-h1 font-semibold text-fg">Configurações</h1>
         <p className="text-sm text-fg-muted">
-          Perfil, limites de alerta, sessao e informacoes da plataforma.
+          Perfil, limites de alerta, sessão e informações da plataforma.
         </p>
       </header>
 

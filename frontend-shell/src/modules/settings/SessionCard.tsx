@@ -76,7 +76,7 @@ export function SessionCard({ onCopied }: SessionCardProps) {
           <Clipboard size={14} /> Copiar token
         </Button>
         <Button type="button" size="sm" onClick={logout}>
-          <LogOut size={14} /> Encerrar sessao
+          <LogOut size={14} /> Encerrar sessão
         </Button>
       </div>
     </div>
