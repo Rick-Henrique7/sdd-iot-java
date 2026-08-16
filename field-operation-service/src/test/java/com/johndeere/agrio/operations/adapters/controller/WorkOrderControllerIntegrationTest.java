@@ -54,4 +54,23 @@ class WorkOrderControllerIntegrationTest {
                 .andExpect(jsonPath("$.status").value("IN_PROGRESS"))
                 .andExpect(jsonPath("$.operatorNotes").value("go"));
     }
+
+    @Test
+    void listAndGetByIdAndNotFound() throws Exception {
+        // List endpoint returns paginated envelope.
+        mvc().perform(get("/api/v1/operations/work-orders"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.totalElements").exists())
+                .andExpect(jsonPath("$.page").value(0));
+
+        // Filter by status.
+        mvc().perform(get("/api/v1/operations/work-orders?status=PENDING"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray());
+
+        // Not found for unknown id.
+        mvc().perform(get("/api/v1/operations/work-orders/WO-inexistente"))
+                .andExpect(status().isNotFound());
+    }
 }

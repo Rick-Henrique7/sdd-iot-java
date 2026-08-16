@@ -3,9 +3,9 @@
 > **Spec-Driven Development (SDD) reference implementation of an
 > enterprise agricultural IoT monitoring platform** — event-driven
 > microservices on Spring Boot 3.3.4 / Java 17, with a Next.js 14
-> micro-frontend. Twenty-one SDD changes shipped end-to-end: six
+> micro-frontend. Twenty-two SDD changes shipped end-to-end: six
 > backend services, one IoT simulator, four frontend modules, plus
-> ten documentation / polish / design-system / role-aware changes.
+> eleven documentation / polish / design-system / role-aware changes.
 
 [![CI](https://img.shields.io/badge/CI-passing-367C2B)](./.github/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](./LICENSE)
@@ -17,7 +17,7 @@
 [![Docker](https://img.shields.io/badge/Docker-24%2B-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-7.4-8B4513?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-63%2F63%20tests-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-67%2F67%20tests-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![SDD](https://img.shields.io/badge/workflow-Spec--Driven-FFDE00)](./CONTRIBUTING.md)
 [![Clean Architecture](https://img.shields.io/badge/Clean%20Architecture-domain%20isolated-FFDE00)](./CONTRIBUTING.md)
 ![Microservices](https://img.shields.io/badge/Microservices-6%20services-B71C1C)
@@ -226,8 +226,8 @@ Para o fluxo de dados detalhado e o racional arquitetural, veja
 | Tempo real          | STOMP / WebSocket plain (sem SockJS) publicado pelo `alert-processing-service`                            | `/topic/telemetry` + `/topic/alerts` consumidos pelo dashboard.                              |
 | Storage             | PostgreSQL 15 (schemas isolados por bounded context: `auth`, `fleet`, `telemetry`, `alert`, `operations`), Redis 7 | Persistencia relacional + cache de ultimo estado por equipamento.                            |
 | Auth                | JWT HS256 (JJWT), BCrypt, 3 perfis: `ROLE_OPERADOR` / `ROLE_AGRONOMO` / `ROLE_GESTOR`                     | `auth-service` emite, `api-gateway` valida na borda, frontend decodifica so para UI.         |
-| Front-end dev       | Vitest + @testing-library + happy-dom, ESLint (next/core-web-vitals + `local/no-emoji`)                    | 63 testes (57 anteriores + 6 do `useRoleGuard`), lint obrigatorio, build estatico, regra `no-emoji` quebra build se emoji for detectado. |
-| Back-end dev        | JUnit 5 + H2 (modo Postgres) + @EmbeddedKafka                                                              | 56 testes (45 antigos + 11 do `field-operation-service`), broker in-process.                 |
+| Front-end dev       | Vitest + @testing-library + happy-dom, ESLint (next/core-web-vitals + `local/no-emoji`)                    | 67 testes (63 anteriores + 2 de `WorkOrdersTable` + 2 de `DowntimeTable`), lint obrigatorio, build estatico, regra `no-emoji` quebra build se emoji for detectado. |
+| Back-end dev        | JUnit 5 + H2 (modo Postgres) + @EmbeddedKafka                                                              | 58 testes (45 antigos + 11 do `field-operation-service` + 2 da Change 022), broker in-process. |
 | Containerizacao     | Docker + Docker Compose (multi-stage build)                                                                | 12 containers: 4 infra (postgres, redis, zookeeper, kafka) + 7 servicos + 1 frontend.       |
 | Registry / CI       | GitHub Container Registry (GHCR) + GitHub Actions (`mvnw verify` + `npm test` + `npm run build`)           | Imagens publicadas em todo push para `main`; 3 jobs (Validate SDD + Maven + frontend).       |
 | Documentacao        | Mudancas estruturadas em `changes/NNN-name/{proposal,spec,design,tasks}.md`                               | Cada mudanca tem 4 artefatos SDD + archive apos merge.                                       |
@@ -241,7 +241,7 @@ Para o fluxo de dados detalhado e o racional arquitetural, veja
 
 ---
 
-## 4. As 21 changes entregues
+## 4. As 22 changes entregues
 
 Cada change vive em `changes/NNN-short-name/` (proposta + spec + design + tasks).
 Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
@@ -273,9 +273,10 @@ Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
 | 018| `readme-honest-badges` (hotfix)          | merged  | Remove badge misleading de Kubernetes, adiciona 4 badges honestos (Maven, TypeScript, Vitest, Microservices em vermelho), retint Kafka para marrom. |
 | 020| `design-system-and-interfaces`            | merged  | Tokens visuais formalizados em `tailwind.config.ts` (`warning: #F59E0B` adicionado), 3 componentes do Operador (`OperatorHeader`, `OrderActionDock`, `DowntimeModal`), rota dedicada `/operator/workspace`, regra ESLint custom `local/no-emoji` (rejeita U+1F300–U+1FAFF + U+2600–U+27BF), teste do `DowntimeModal` (5 cenarios), 57 testes. |
 | 021| `frontend-operator-workspace`             | merged  | Renomeia `(app)/` para `(gestor)/` (route group paralelo), `Sidebar` expandida para 6 abas com filtro por role (Operador sem Sidebar; Agrônomo vê 4; Gestor vê 6), `useRoleGuard` hook com 6 testes vitest, `AuthForm` redireciona por role pós-login, 2 stubs (`/operations`, `/maintenance`) com empty states honestos, 13 paginas estaticas, 63 testes. |
+| 022| `work-orders-list`                        | merged  | Backend: `GET /api/v1/operations/work-orders[/{id}]` (com filtros `status` + `equipmentId`, paginacao), `GET /api/v1/operations/downtime`, `PageResponseDTO<T>`, `EntityMappers` component, 3 use cases novos, `ApiExceptionHandler` para 404, +1 teste e2e (13/13 backend). Frontend: 2 modulos novos (`work-orders/`, `downtime/`) com `useWorkOrdersQuery` (polling 10s) e `useDowntimeQuery` (polling 15s), tabelas estilizadas, `/operations` e `/maintenance` saem do estado placeholder, 67 testes. |
 
-> O sistema ja nasce com **56 testes backend** (JUnit 5, era 45 antes do `field-operation-service`) + **57 testes frontend**
-> (Vitest, 52 anteriores + 5 do `DowntimeModal` na Change 020) verdes no CI, em 3 jobs: `Validate SDD artifacts`, `Build & test (Maven)`,
+> O sistema ja nasce com **58 testes backend** (JUnit 5, era 45 antes do `field-operation-service`) + **67 testes frontend**
+> (Vitest, 63 anteriores + 2 de `WorkOrdersTable` + 2 de `DowntimeTable` na Change 022) verdes no CI, em 3 jobs: `Validate SDD artifacts`, `Build & test (Maven)`,
 > `Build & test (frontend-shell)`.
 
 ### Mapa de URLs x mudanças
@@ -471,7 +472,7 @@ Use o **Maven Wrapper** para nao depender de uma instalacao local de Maven:
 # Front-end
 cd frontend-shell
 npm ci
-npm test          # 63/63 (Vitest)
+npm test          # 67/67 (Vitest)
 npm run build     # 13 rotas, 87.6 KB shared
 ```
 
@@ -479,15 +480,15 @@ npm run build     # 13 rotas, 87.6 KB shared
 > `https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip`
 > (espelha o `settings.xml` corporativo, se houver).
 
-### 8.1. How to test (correr os 119 testes do projeto)
+### 8.1. How to test (correr os 125 testes do projeto)
 
-O projeto nasce com **119 testes** verdes, distribuidos em 2 suites
+O projeto nasce com **125 testes** verdes, distribuidos em 2 suites
 independentes:
 
 | Suite                       | Ferramenta              | Total  | Comando                              |
 |-----------------------------|--------------------------|--------|--------------------------------------|
-| Back-end (6 servicos)       | JUnit 5 + H2 + @EmbeddedKafka | 56/56 | `.\mvnw.cmd -B verify`               |
-| Front-end (`frontend-shell`) | Vitest + happy-dom       | 63/63  | `cd frontend-shell && npm test`      |
+| Back-end (6 servicos)       | JUnit 5 + H2 + @EmbeddedKafka | 58/58 | `.\mvnw.cmd -B verify`               |
+| Front-end (`frontend-shell`) | Vitest + happy-dom       | 67/67  | `cd frontend-shell && npm test`      |
 
 Coberturas ja garantidas:
 
