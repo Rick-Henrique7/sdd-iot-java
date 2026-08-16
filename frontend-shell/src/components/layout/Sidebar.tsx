@@ -14,6 +14,7 @@ import {
 import { routes, type RoutePath } from '@/lib/routes';
 import { useAuthStore } from '@/stores/authStore';
 import { useLogout } from '@/hooks/useLogout';
+import { formatRole } from '@/lib/formatRole';
 
 interface NavItem {
   href: RoutePath;
@@ -95,7 +96,7 @@ export function Sidebar() {
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs text-fg">{user?.email}</p>
               <p className="truncate text-[0.6875rem] uppercase tracking-wider text-fg-muted">
-                {user?.role}
+                {formatRole(user?.role)}
               </p>
             </div>
           )}

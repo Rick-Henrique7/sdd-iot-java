@@ -3,6 +3,7 @@
 import { User } from 'lucide-react';
 import { useAuthStore } from '@/stores/authStore';
 import { decodeJwt } from '@/lib/jwt';
+import { formatRole } from '@/lib/formatRole';
 
 function formatDate(iat: number | undefined): string {
   if (!iat) return '—';
@@ -22,7 +23,7 @@ export function ProfileCard() {
   const token = useAuthStore((s) => s.token);
   const claims = decodeJwt(token);
   const displayName = user?.fullName?.trim() || (user?.email?.split('@')[0] ?? 'Operador');
-  const role = user?.role ?? '—';
+  const role = formatRole(user?.role);
 
   return (
     <div className="panel space-y-3 p-4">

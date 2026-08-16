@@ -17,7 +17,7 @@ describe('authStore', () => {
     useAuthStore.getState().setSession('jwt-123', {
       id: 'u1',
       email: 'a@b.com',
-      role: 'OPERATOR',
+      role: 'ROLE_OPERADOR',
     });
     const s = useAuthStore.getState();
     expect(s.token).toBe('jwt-123');
@@ -28,7 +28,7 @@ describe('authStore', () => {
 
   it('clear drops state and storage', () => {
     useAuthStore.getState().setSession('jwt-123', {
-      id: 'u1', email: 'a@b.com', role: 'OPERATOR',
+      id: 'u1', email: 'a@b.com', role: 'ROLE_OPERADOR',
     });
     useAuthStore.getState().clear();
     const s = useAuthStore.getState();
@@ -41,12 +41,12 @@ describe('authStore', () => {
   it('hydrate re-populates from localStorage', () => {
     localStorage.setItem('agrio.token', 'jwt-xyz');
     localStorage.setItem('agrio.user', JSON.stringify({
-      id: 'u2', email: 'x@y.com', role: 'AGRONOMIST',
+      id: 'u2', email: 'x@y.com', role: 'ROLE_AGRONOMO',
     }));
     useAuthStore.getState().hydrate();
     const s = useAuthStore.getState();
     expect(s.token).toBe('jwt-xyz');
-    expect(s.user?.role).toBe('AGRONOMIST');
+    expect(s.user?.role).toBe('ROLE_AGRONOMO');
   });
 
   it('hydrate drops the storage entry if user JSON is corrupt', () => {
