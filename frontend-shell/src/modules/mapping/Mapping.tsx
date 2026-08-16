@@ -54,7 +54,7 @@ export function Mapping() {
         </span>
         <h1 className="text-h1 font-semibold text-fg">Mapeamento de Campo</h1>
         <p className="text-sm text-fg-muted">
-          Visualizacao geografica em tempo real com Leaflet, heatmap de pulverizacao e widget de clima Open-Meteo.
+          Visualização geográfica em tempo real com Leaflet, heatmap de pulverização e widget de clima Open-Meteo.
         </p>
       </header>
 
@@ -70,7 +70,7 @@ export function Mapping() {
               onChange={(e) => setShowHeat(e.currentTarget.checked)}
             />
           </div>
-          <div className="relative flex-1">
+          <div className="relative min-h-[420px] flex-1">
             <MapShellDynamic
               center={center}
               zoom={13}
@@ -78,21 +78,21 @@ export function Mapping() {
               fieldPlot={plot}
               heat={showHeat ? heatQuery.data ?? null : null}
             />
-            <div className="pointer-events-none absolute right-3 top-3">
+            <div className="pointer-events-none absolute right-3 top-3 z-10">
               <OpenMeteoWidget lat={center[0]} lng={center[1]} />
             </div>
           </div>
-          <footer className="flex items-center gap-4 border-t border-border px-3 py-2 text-[0.6875rem] uppercase tracking-wider text-fg-muted">
-            <span className="inline-flex items-center gap-1.5">
+          <footer className="flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-border px-4 py-2.5 text-[0.6875rem] uppercase tracking-wider text-fg-muted">
+            <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
               <span className="h-2 w-2 rounded-full bg-brand" /> Operacional
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-accent" /> Manutencao
+            <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
+              <span className="h-2 w-2 rounded-full bg-accent" /> Manutenção
             </span>
-            <span className="inline-flex items-center gap-1.5">
+            <span className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
               <span className="h-2 w-2 rounded-full bg-fg-muted/50" /> Inativo
             </span>
-            <span className="ml-auto">{enriched.length} equipamentos</span>
+            <span className="ml-auto whitespace-nowrap">{enriched.length} equipamentos</span>
           </footer>
         </div>
 
@@ -102,7 +102,7 @@ export function Mapping() {
             <p className="text-sm text-fg">{plot.name}</p>
             <p className="text-xs text-fg-muted">
               Centro em ({plot.center.latitude.toFixed(3)}, {plot.center.longitude.toFixed(3)}).{' '}
-              {plot.polygon.length - 1} vertices.
+              {plot.polygon.length - 1} vértices.
             </p>
           </div>
           <div className="panel space-y-2 p-4">

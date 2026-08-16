@@ -41,7 +41,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         return;
       }
       if (password !== confirmPassword) {
-        setError('As senhas nao conferem.');
+        setError('As senhas não conferem.');
         return;
       }
     }
@@ -62,8 +62,8 @@ export function AuthForm({ mode }: AuthFormProps) {
       setError(
         apiErr.response?.data?.message ??
           (isRegister
-            ? 'Nao foi possivel concluir o cadastro.'
-            : 'Credenciais invalidas.'),
+            ? 'Não foi possível concluir o cadastro.'
+            : 'Credenciais inválidas.'),
       );
     } finally {
       setSubmitting(false);
@@ -98,7 +98,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         autoComplete={isRegister ? 'new-password' : 'current-password'}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
-        hint={isRegister ? 'Minimo de 8 caracteres.' : undefined}
+        hint={isRegister ? 'Mínimo de 8 caracteres.' : undefined}
         required
       />
 

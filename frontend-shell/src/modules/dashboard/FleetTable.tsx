@@ -16,7 +16,7 @@ const STATUS_DOT: Record<EquipmentStatus, string> = {
 
 const STATUS_LABEL: Record<EquipmentStatus, string> = {
   OPERATIONAL: 'Operacional',
-  MAINTENANCE: 'Manutencao',
+  MAINTENANCE: 'Manutenção',
   INACTIVE: 'Inativo',
 };
 
@@ -92,8 +92,8 @@ export function FleetTable() {
               <Th sortKey="rpm" sort={sort} onSort={setSort} align="right">RPM</Th>
               <Th sortKey="temp" sort={sort} onSort={setSort} align="right">Temp (°C)</Th>
               <Th sortKey="speed" sort={sort} onSort={setSort} align="right">Velocidade</Th>
-              <Th sortKey="fuel" sort={sort} onSort={setSort} align="right">Combustivel</Th>
-              <Th sortKey="lastSeen" sort={sort} onSort={setSort}>Ultimo sinal</Th>
+              <Th sortKey="fuel" sort={sort} onSort={setSort} align="right">Combustível</Th>
+              <Th sortKey="lastSeen" sort={sort} onSort={setSort}>Último sinal</Th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">

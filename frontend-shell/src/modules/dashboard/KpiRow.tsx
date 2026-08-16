@@ -25,12 +25,12 @@ export function KpiRow() {
             </>
           )
         }
-        hint="Equipamentos transmitindo nos ultimos 60 s"
+        hint="Equipamentos transmitindo nos últimos 60 s"
         icon={Activity}
         tone={kpis.activeFleet.seen > 0 ? 'ok' : 'idle'}
       />
       <KpiCard
-        label="Temp. Media do Motor"
+        label="Temp. Média do Motor"
         value={
           kpis.avgTemp.value > 0 ? (
             <>
@@ -41,14 +41,14 @@ export function KpiRow() {
             <span className="text-fg-muted">—</span>
           )
         }
-        hint="Media movel, ultimos 5 min"
+        hint="Média móvel, últimos 5 min"
         icon={ThermometerSun}
         tone={tempTone === 'idle' ? 'idle' : tempTone}
       />
       <KpiCard
-        label="Alertas Criticos"
+        label="Alertas Críticos"
         value={kpis.criticalAlerts}
-        hint="Severidade CRITICAL na sessao"
+        hint="Severidade CRITICAL na sessão"
         icon={AlertTriangle}
         tone={alertTone}
       />

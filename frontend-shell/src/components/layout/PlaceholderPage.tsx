@@ -33,12 +33,12 @@ export function PlaceholderPage({
             <Icon size={22} aria-hidden />
           </div>
           <h2 className="text-h2 uppercase tracking-wide text-fg-muted">
-            Tela em construcao
+            Tela em construção
           </h2>
           <p className="text-sm text-fg-body">
-            A interface completa desta area sera entregue em
-            proxima change. Por enquanto, a rota ja esta
-            autenticada e navegavel.
+            A interface completa desta área será entregue em
+            próxima change. Por enquanto, a rota já está
+            autenticada e navegável.
           </p>
         </div>
       </div>

@@ -12,7 +12,7 @@ const STATUS_DOT: Record<EquipmentStatus, string> = {
 
 const STATUS_LABEL: Record<EquipmentStatus, string> = {
   OPERATIONAL: 'Operacional',
-  MAINTENANCE: 'Manutencao',
+  MAINTENANCE: 'Manutenção',
   INACTIVE: 'Inativo',
 };
 
@@ -51,8 +51,8 @@ export function FleetTable({ onEdit, onToggleStatus, actionsDisabled }: FleetTab
               <th className="pb-2 pr-2 text-left">Tipo</th>
               <th className="pb-2 pr-2 text-left">Status</th>
               <th className="pb-2 pr-2 text-right">Horimetro</th>
-              <th className="pb-2 pr-2 text-left">Ultima manutencao</th>
-              <th className="pb-2 pr-2 text-right">Acoes</th>
+              <th className="pb-2 pr-2 text-left">Última manutenção</th>
+              <th className="pb-2 pr-2 text-right">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">

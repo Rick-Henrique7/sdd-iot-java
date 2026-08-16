@@ -29,7 +29,7 @@ export function AlertPanel() {
       <ul className="flex-1 space-y-1 overflow-y-auto pr-1">
         {alerts.length === 0 ? (
           <li className="grid h-32 place-items-center text-xs text-fg-muted">
-            Nenhum alerta recebido nesta sessao.
+            Nenhum alerta recebido nesta sessão.
           </li>
         ) : (
           alerts.map((a) => (

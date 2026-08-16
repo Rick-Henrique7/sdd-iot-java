@@ -78,14 +78,14 @@ export function BrandPanel() {
       {/* Middle: tagline + value prop */}
       <div className="relative z-10 max-w-md">
         <h1 className="text-balance text-3xl font-semibold leading-tight text-fg">
-          Telemetria agricola
+          Telemetria agrícola
           <br />
           em tempo real.
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-fg-body">
-          Monitore a frota, identifique anomalias e tome decisoes de
-          campo a partir de um unico painel. Sem promessas, sem
-          dashboards vazios: so dados vivos dos seus equipamentos.
+          Monitore a frota, identifique anomalias e tome decisões de
+          campo a partir de um único painel. Sem promessas, sem
+          dashboards vazios: só dados vivos dos seus equipamentos.
         </p>
       </div>
 

@@ -13,7 +13,7 @@ export default function RegisterPage() {
           <header className="mb-8">
             <h1 className="text-h1 font-semibold text-fg">Criar conta</h1>
             <p className="mt-1 text-sm text-fg-muted">
-              Primeiro acesso? Defina suas credenciais de operacao.
+              Primeiro acesso? Defina suas credenciais de operação.
             </p>
           </header>
 
@@ -32,7 +32,7 @@ export default function RegisterPage() {
           <AuthForm mode="register" />
 
           <p className="mt-6 text-center text-xs text-fg-muted">
-            Ja tem conta?{' '}
+            Já tem conta?{' '}
             <Link
               href={routes.login}
               className="font-medium text-brand hover:underline"

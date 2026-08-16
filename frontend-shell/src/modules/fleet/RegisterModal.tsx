@@ -67,11 +67,11 @@ export function RegisterModal({ open, onClose, initial }: RegisterModalProps) {
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!form.id.trim()) {
-      setError('ID e obrigatorio.');
+      setError('ID é obrigatório.');
       return;
     }
     if (!form.name.trim()) {
-      setError('Nome e obrigatorio.');
+      setError('Nome é obrigatório.');
       return;
     }
     const dto: Equipment = {
@@ -134,7 +134,7 @@ export function RegisterModal({ open, onClose, initial }: RegisterModalProps) {
             required
           />
           <Input
-            label="Numero de serie"
+            label="Número de série"
             value={form.serialNumber}
             onChange={(e) => setForm((f) => ({ ...f, serialNumber: e.target.value }))}
             required
@@ -165,7 +165,7 @@ export function RegisterModal({ open, onClose, initial }: RegisterModalProps) {
             onChange={(e) => setForm((f) => ({ ...f, horometerHours: e.target.value }))}
           />
           <Input
-            label="Ultima manutencao"
+            label="Última manutenção"
             type="date"
             value={form.lastMaintenanceDate}
             onChange={(e) => setForm((f) => ({ ...f, lastMaintenanceDate: e.target.value }))}
