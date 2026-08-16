@@ -8,6 +8,10 @@ const config: Config = {
   content: [
     './src/app/**/*.{ts,tsx}',
     './src/components/**/*.{ts,tsx}',
+    './src/modules/**/*.{ts,tsx}',
+    './src/hooks/**/*.{ts,tsx}',
+    './src/stores/**/*.{ts,tsx}',
+    './src/lib/**/*.{ts,tsx}',
   ],
   darkMode: 'class',
   theme: {

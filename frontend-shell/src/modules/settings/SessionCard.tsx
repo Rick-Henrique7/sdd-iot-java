@@ -73,10 +73,10 @@ export function SessionCard({ onCopied }: SessionCardProps) {
       </dl>
       <div className="flex items-center gap-2">
         <Button type="button" variant="secondary" size="sm" onClick={handleCopy} disabled={!token}>
-          <Clipboard size={14} /> Copiar token
+          <div className="flex"><Clipboard size={14} className="mt-1 mr-2"/> Copiar token</div>
         </Button>
         <Button type="button" size="sm" onClick={logout}>
-          <LogOut size={14} /> Encerrar sessão
+          <div className="flex"><LogOut size={14} className="mt-1 mr-2" /> Encerrar sessão</div>
         </Button>
       </div>
     </div>
