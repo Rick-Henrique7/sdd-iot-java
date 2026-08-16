@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
-import { routes } from '@/lib/routes';
+import { useRoleGuard } from '@/hooks/useRoleGuard';
 import type { AuthResponse, UserRole } from '@/types/auth';
 
 type Mode = 'login' | 'register';
@@ -20,6 +20,7 @@ interface AuthFormProps {
 export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
+  const guard = useRoleGuard();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -56,7 +57,8 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       const { data } = await api.post<AuthResponse>(url, body);
       setSession(data.token, data.user);
-      router.push(routes.dashboard);
+      // Change 021: redirect by role (Operador -> /operator/workspace, others -> /dashboard)
+      router.push(guard.landingPath(data.user.role));
     } catch (err) {
       const apiErr = err as { response?: { data?: { message?: string } } };
       setError(

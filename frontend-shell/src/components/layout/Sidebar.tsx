@@ -9,24 +9,31 @@ import {
   Truck,
   Settings as SettingsIcon,
   LogOut,
+  ClipboardList,
+  Wrench,
   type LucideIcon,
 } from 'lucide-react';
 import { routes, type RoutePath } from '@/lib/routes';
 import { useAuthStore } from '@/stores/authStore';
 import { useLogout } from '@/hooks/useLogout';
 import { formatRole } from '@/lib/formatRole';
+import type { UserRole } from '@/types/auth';
 
 interface NavItem {
   href: RoutePath;
   label: string;
   icon: LucideIcon;
+  /** Roles that can see this nav item. */
+  roles: UserRole[];
 }
 
 const NAV: NavItem[] = [
-  { href: routes.dashboard, label: 'Dashboard',  icon: LayoutDashboard },
-  { href: routes.mapping,   label: 'Mapeamento', icon: Map },
-  { href: routes.fleet,     label: 'Frota',      icon: Truck },
-  { href: routes.settings,  label: 'Configuracoes', icon: SettingsIcon },
+  { href: routes.dashboard,   label: 'Dashboard',      icon: LayoutDashboard, roles: ['ROLE_AGRONOMO', 'ROLE_GESTOR'] },
+  { href: routes.mapping,     label: 'Mapeamento',     icon: Map,              roles: ['ROLE_AGRONOMO', 'ROLE_GESTOR'] },
+  { href: routes.operations,  label: 'Operações',      icon: ClipboardList,    roles: ['ROLE_GESTOR'] },
+  { href: routes.fleet,       label: 'Frota',          icon: Truck,            roles: ['ROLE_AGRONOMO', 'ROLE_GESTOR'] },
+  { href: routes.maintenance, label: 'Manutenção',     icon: Wrench,           roles: ['ROLE_GESTOR'] },
+  { href: routes.settings,    label: 'Configuracoes',  icon: SettingsIcon,     roles: ['ROLE_AGRONOMO', 'ROLE_GESTOR'] },
 ];
 
 export function Sidebar() {
@@ -36,6 +43,13 @@ export function Sidebar() {
   const logout = useLogout();
 
   const width = expanded ? 'w-60' : 'w-[60px]';
+
+  // Filter nav by user role. Operador shouldn't even reach this shell
+  // (the AuthGate in (gestor)/layout.tsx redirects them), but we
+  // double-guard here in case of race conditions.
+  const visibleNav = user
+    ? NAV.filter((item) => item.roles.includes(user.role))
+    : [];
 
   return (
     <aside
@@ -47,7 +61,7 @@ export function Sidebar() {
     >
       <nav className="flex-1 px-2 py-3">
         <ul className="space-y-1">
-          {NAV.map((item) => {
+          {visibleNav.map((item) => {
             const active = pathname === item.href;
             const Icon = item.icon;
             return (
