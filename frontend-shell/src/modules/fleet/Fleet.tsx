@@ -56,8 +56,10 @@ export function Fleet() {
             setModalOpen(true);
           }}
         >
-          <Plus size={14} />
+          <div className="flex">
+          <Plus size={14} className="mt-1 mr-2"/>
           Cadastrar equipamento
+          </div>
         </Button>
       </header>
 

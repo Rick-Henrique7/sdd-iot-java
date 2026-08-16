@@ -3,9 +3,9 @@
 > **Spec-Driven Development (SDD) reference implementation of an
 > enterprise agricultural IoT monitoring platform** — event-driven
 > microservices on Spring Boot 3.3.4 / Java 17, with a Next.js 14
-> micro-frontend. Seventeen SDD changes shipped end-to-end: six
+> micro-frontend. Twenty SDD changes shipped end-to-end: six
 > backend services, one IoT simulator, four frontend modules, plus
-> six documentation / polish changes.
+> nine documentation / polish / design-system changes.
 
 [![CI](https://img.shields.io/badge/CI-passing-367C2B)](./.github/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](./LICENSE)
@@ -17,7 +17,7 @@
 [![Docker](https://img.shields.io/badge/Docker-24%2B-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
 [![Apache Kafka](https://img.shields.io/badge/Apache%20Kafka-7.4-8B4513?logo=apachekafka&logoColor=white)](https://kafka.apache.org/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-336791?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Vitest](https://img.shields.io/badge/Vitest-52%2F52%20tests-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
+[![Vitest](https://img.shields.io/badge/Vitest-57%2F57%20tests-6E9F18?logo=vitest&logoColor=white)](https://vitest.dev/)
 [![SDD](https://img.shields.io/badge/workflow-Spec--Driven-FFDE00)](./CONTRIBUTING.md)
 [![Clean Architecture](https://img.shields.io/badge/Clean%20Architecture-domain%20isolated-FFDE00)](./CONTRIBUTING.md)
 ![Microservices](https://img.shields.io/badge/Microservices-6%20services-B71C1C)
@@ -38,6 +38,7 @@ seguintes URLs (host = `localhost`):
 | `http://localhost:3000/mapping`              | Mapa Leaflet com os trators, poligonos dos talhoes, heatmap, widget Open-Meteo.       |
 | `http://localhost:3000/fleet`                | CRUD de equipamentos (cadastrar, listar, ativar/desativar).                          |
 | `http://localhost:3000/settings`             | Perfil, thresholds de alerta, sessao, sobre.                                          |
+| `http://localhost:3000/operator/workspace`  | Workspace dedicado do **Operador** (touch-friendly, sem Sidebar, aciona paradas/OS).   |
 | `http://localhost:8080/actuator/health`      | Health do API Gateway (proxy reverso, JWT na borda).                                  |
 | `http://localhost:8081/actuator/health`      | Health do servico de ingestao de telemetria.                                         |
 | `http://localhost:8082/actuator/health`      | Health do processador de alertas + endpoint STOMP `ws://localhost:8082/ws`.          |
@@ -81,6 +82,59 @@ docker compose down -v         # Para containers E apaga volumes (reset completo
 > A aplicacao tambem tem auto-cadastro: abra `http://localhost:3000/register`
 > e crie sua propria conta escolhendo um dos tres perfis
 > (`Operador` / `Agrônomo` / `Gestor`).
+
+### 1.4. Personas & permissoes
+
+A aplicacao serve **dois perfis** com UIs dedicadas. O token JWT carrega
+a role e a UI se adapta a ela.
+
+| Perfil             | Role no JWT        | Landing apos login       | UI dedicada                                                                 |
+|--------------------|--------------------|--------------------------|------------------------------------------------------------------------------|
+| **Operador**       | `ROLE_OPERADOR`    | `/operator/workspace`    | Touch-friendly, sem Sidebar, grid de 3 secoes: `OperatorHeader` + `OrderActionDock` + card de Apontamento. Dispara `POST /api/v1/operations/downtime`. |
+| **Agrônomo**       | `ROLE_AGRONOMO`    | `/dashboard`             | Sidebar colapsavel de 4 abas (Dashboard / Mapeamento / Frota / Configuracoes). Acesso completo de leitura + alerta. |
+| **Gestor**         | `ROLE_GESTOR`      | `/dashboard`             | Mesma Sidebar do Agrônomo (preparada para expansao a 6 abas em Change 021). |
+
+> O **Operador** e a cabine do trator. O **Gestor/Agrônomo** e o centro
+> de controle (CCO). A separacao foi feita em Change 020
+> (`docs/frontend/design-system-and-interfaces.md`); o split fisico das
+> rotas em route groups paralelos `(gestor)/` e `operator/` vem na
+> proxima change (021).
+
+### 1.5. Design System (resumo)
+
+A UI segue um Design System fechado, formalizado em Change 020
+([`docs/frontend/design-system-and-interfaces.md`](./docs/frontend/design-system-and-interfaces.md)).
+Qualquer desvio e red flag em code review.
+
+**Tokens visuais** (em `frontend-shell/tailwind.config.ts`):
+
+| Token        | Hex       | Uso                                          |
+|--------------|-----------|----------------------------------------------|
+| `bg`         | `#0F172A` | Canvas (slate-900). **Nunca** preto puro.    |
+| `card`       | `#1E293B` | Cards / paineis (slate-800).                 |
+| `card-2`     | `#172033` | Sub-areas dentro de cards.                   |
+| `border`     | `#334155` | Borda 1px.                                   |
+| `fg`         | `#F8FAFC` | Texto primario.                              |
+| `fg-muted`   | `#94A3B8` | Texto secundario.                            |
+| `brand`      | `#367C2B` | Verde John Deere.                            |
+| `accent`     | `#FFDE00` | Amarelo agricola (marca).                    |
+| `warning`    | `#F59E0B` | Atencao media (amber-500).                   |
+| `critical`   | `#EF4444` | Alerta critico.                              |
+| `info`       | `#3B82F6` | Informativo.                                 |
+
+**Anti-padroes inviolaveis** (regra `local/no-emoji` quebra o build):
+
+1. **Zero emojis** em qualquer `.tsx` — apenas icones vetoriais
+   `lucide-react`.
+2. **Font-mono** em valores numericos de telemetria (RPM, temperatura,
+   velocidade, horimetro, GPS).
+3. **Sem variacao de cor/peso** na ultima palavra de titulos.
+4. **Sem preto puro** `#000000` em qualquer lugar.
+
+A regra `local/no-emoji` vive em
+`frontend-shell/.eslint-plugin/eslint-plugin-local/index.js` e esta
+registrada como `error` em `.eslintrc.js`. `npm run lint` falha o build
+se qualquer emoji for adicionado por engano.
 
 ---
 
@@ -130,8 +184,10 @@ docker compose down -v         # Para containers E apaga volumes (reset completo
                  |                   |   exercitar o pipeline)
                  +-------------------+
 
-                 (NEW in Change 019, parallel to the telemetry path)
-
+                          ^  (api-gateway :8080 routes
+                          |   /api/v1/operations/** here
+                          |   via JwtAuthenticationFilter)
+                          v
                  +-------------------+        +----------------------+
                  |  FIELD OPERATION  | -----> | Kafka topic          |
                  |      :8085        |        | agri.operations.events|
@@ -153,7 +209,7 @@ Para o fluxo de dados detalhado e o racional arquitetural, veja
 
 ---
 
-## 3. Tech stack (atual, pos-Change 019)
+## 3. Tech stack (atual, pos-Change 020)
 
 | Camada              | Tecnologia                                                                                                | Uso                                                                                          |
 |---------------------|------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
@@ -165,7 +221,7 @@ Para o fluxo de dados detalhado e o racional arquitetural, veja
 | Tempo real          | STOMP / WebSocket plain (sem SockJS) publicado pelo `alert-processing-service`                            | `/topic/telemetry` + `/topic/alerts` consumidos pelo dashboard.                              |
 | Storage             | PostgreSQL 15 (schemas isolados por bounded context: `auth`, `fleet`, `telemetry`, `alert`, `operations`), Redis 7 | Persistencia relacional + cache de ultimo estado por equipamento.                            |
 | Auth                | JWT HS256 (JJWT), BCrypt, 3 perfis: `ROLE_OPERADOR` / `ROLE_AGRONOMO` / `ROLE_GESTOR`                     | `auth-service` emite, `api-gateway` valida na borda, frontend decodifica so para UI.         |
-| Front-end dev       | Vitest + @testing-library + happy-dom, ESLint (next/core-web-vitals)                                       | 52 testes, lint obrigatorio, build estatico.                                                  |
+| Front-end dev       | Vitest + @testing-library + happy-dom, ESLint (next/core-web-vitals + `local/no-emoji`)                    | 57 testes (52 anteriores + 5 do `DowntimeModal`), lint obrigatorio, build estatico, regra `no-emoji` quebra build se emoji for detectado. |
 | Back-end dev        | JUnit 5 + H2 (modo Postgres) + @EmbeddedKafka                                                              | 56 testes (45 antigos + 11 do `field-operation-service`), broker in-process.                 |
 | Containerizacao     | Docker + Docker Compose (multi-stage build)                                                                | 12 containers: 4 infra (postgres, redis, zookeeper, kafka) + 7 servicos + 1 frontend.       |
 | Registry / CI       | GitHub Container Registry (GHCR) + GitHub Actions (`mvnw verify` + `npm test` + `npm run build`)           | Imagens publicadas em todo push para `main`; 3 jobs (Validate SDD + Maven + frontend).       |
@@ -180,7 +236,7 @@ Para o fluxo de dados detalhado e o racional arquitetural, veja
 
 ---
 
-## 4. As 17 changes entregues
+## 4. As 20 changes entregues
 
 Cada change vive em `changes/NNN-short-name/` (proposta + spec + design + tasks).
 Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
@@ -210,9 +266,10 @@ Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
 | 013| `frontend-polish-and-readme`             | merged  | ~80 correcoes de acentuacao PT-BR no front, layout do `/mapping`, README v2 com Docker, Kafka, Postgres, Clean Code.                                  |
 | 017| `frontend-polish-and-docs-prep`          | merged  | Dashboard fix (min-h-0 + overflow-hidden), `TelemetryStreamMount` lifted from HOC to layout, OpenMeteoWidget horizontal, 2 docs/ specs (`field-operation-service`, `operator-profile-and-gestor-sidebar`), 3 placeholder tasks (014/015/016). |
 | 018| `readme-honest-badges` (hotfix)          | merged  | Remove badge misleading de Kubernetes, adiciona 4 badges honestos (Maven, TypeScript, Vitest, Microservices em vermelho), retint Kafka para marrom. |
+| 020| `design-system-and-interfaces`            | merged  | Tokens visuais formalizados em `tailwind.config.ts` (`warning: #F59E0B` adicionado), 3 componentes do Operador (`OperatorHeader`, `OrderActionDock`, `DowntimeModal`), rota dedicada `/operator/workspace`, regra ESLint custom `local/no-emoji` (rejeita U+1F300–U+1FAFF + U+2600–U+27BF), teste do `DowntimeModal` (5 cenarios), 57 testes. |
 
-> O sistema ja nasce com **56 testes backend** (JUnit 5, era 45 antes do `field-operation-service`) + **52 testes frontend**
-> (Vitest) verdes no CI, em 3 jobs: `Validate SDD artifacts`, `Build & test (Maven)`,
+> O sistema ja nasce com **56 testes backend** (JUnit 5, era 45 antes do `field-operation-service`) + **57 testes frontend**
+> (Vitest, 52 anteriores + 5 do `DowntimeModal` na Change 020) verdes no CI, em 3 jobs: `Validate SDD artifacts`, `Build & test (Maven)`,
 > `Build & test (frontend-shell)`.
 
 ### Mapa de URLs x mudanças
@@ -226,7 +283,7 @@ Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
 | `GET  /api/v1/mapping/heatmaps`    | `fleet-mapping-service:8084`           | 001 + 005 + 009      |
 | `ws://localhost:8082/ws`           | `alert-processing-service:8082` (STOMP)| 001 + 004 + 008      |
 | `http://localhost:8080/api/v1/operations/**` | `field-operation-service:8085`         | 001 + 019             |
-| `http://localhost:3000/*`          | `frontend-shell` (Next.js)             | 007 + 008 + 009 + 010 + 011 |
+| `http://localhost:3000/*`          | `frontend-shell` (Next.js)             | 007 + 008 + 009 + 010 + 011 + 020 |
 
 ---
 
@@ -293,14 +350,16 @@ sdd-iot-java/
 ├── fleet-mapping-service/                # CRUD frota + talhoes + heatmap deterministico
 ├── iot-simulator-service/                # Node.js 20 + KafkaJS, 3 maquinas, 1Hz, 5% anomalia
 ├── field-operation-service/              # WorkOrder + Downtime (NEW in Change 019)
-├── frontend-shell/                       # Next.js 14, modulos dashboard/mapping/fleet/settings
+├── frontend-shell/                       # Next.js 14, modulos dashboard/mapping/fleet/settings + operator/workspace
+│   ├── .eslint-plugin/                   # Plugin ESLint local (regra `no-emoji`)
+│   └── src/modules/operator/             # 3 componentes do operador (OperatorHeader, OrderActionDock, DowntimeModal)
 │
 ├── docs/                                 # Fonte de verdade das especificacoes
 │   ├── general-vision/                   # Visao macro do sistema
 │   ├── backend/                          # Specs + governance do back-end
 │   │   ├── microservices-specification/  # Contrato de cada servico
 │   │   └── guidelines-and-governance/    # Regras inviolaveis
-│   └── frontend/                         # Blueprint + estrutura do front
+│   └── frontend/                         # Blueprint + estrutura + design system
 │
 ├── changes/                              # SDD change-management
 │   ├── 001-api-gateway/                  # proposal + spec + design + tasks
@@ -310,17 +369,20 @@ sdd-iot-java/
 │   ├── 005-fleet-mapping-service/
 │   ├── 006-iot-simulator-service/
 │   ├── 007-frontend-shell/
+│   ├── 020-design-system-and-interfaces/ # NEW: Design System + 3 componentes Operator + regra no-emoji
 │   └── archive/                          # Mudancas ja mergeadas
 │       ├── 2026-08-15-008-frontend-dashboard/
 │       ├── 2026-08-15-009-frontend-mapping/
 │       ├── 2026-08-15-010-frontend-settings/
-│       └── 2026-08-15-011-frontend-role-enum-fix/
+│       ├── 2026-08-15-011-frontend-role-enum-fix/
+│       ├── 2026-08-16-019-field-operation-service/
+│       └── 2026-08-16-020-design-system-and-interfaces/
 │
 ├── .github/                              # Workflows, templates, CODEOWNERS
 │   └── workflows/
 │       └── ci.yml                        # 3 jobs: Validate SDD + Build & test (Maven) + Build & test (frontend-shell)
 │
-├── init.sql                              # Schemas isolados no Postgres (auth, fleet, telemetry, alert)
+├── init.sql                              # Schemas isolados no Postgres (auth, fleet, telemetry, alert, operations)
 ├── docker-compose.yml                    # Stack completo: infra + 6 servicos + simulador + front
 ├── pom.xml                               # Multi-module Maven parent
 ├── mvnw / mvnw.cmd                       # Maven Wrapper (3.9.9)
@@ -403,23 +465,23 @@ Use o **Maven Wrapper** para nao depender de uma instalacao local de Maven:
 # Front-end
 cd frontend-shell
 npm ci
-npm test          # 52/52 (Vitest)
-npm run build     # 10 rotas, 87.7 KB shared
+npm test          # 57/57 (Vitest)
+npm run build     # 11 rotas, 87.7 KB shared
 ```
 
 > O `mvnw.cmd` no Windows ja esta fixado para
 > `https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip`
 > (espelha o `settings.xml` corporativo, se houver).
 
-### 8.1. How to test (correr os 97 testes do projeto)
+### 8.1. How to test (correr os 113 testes do projeto)
 
-O projeto nasce com **97 testes** verdes, distribuidos em 2 suites
+O projeto nasce com **113 testes** verdes, distribuidos em 2 suites
 independentes:
 
 | Suite                       | Ferramenta              | Total  | Comando                              |
 |-----------------------------|--------------------------|--------|--------------------------------------|
-| Back-end (5 servicos)       | JUnit 5 + H2 + @EmbeddedKafka | 45/45 | `.\mvnw.cmd -B verify`               |
-| Front-end (`frontend-shell`) | Vitest + happy-dom       | 52/52  | `cd frontend-shell && npm test`      |
+| Back-end (6 servicos)       | JUnit 5 + H2 + @EmbeddedKafka | 56/56 | `.\mvnw.cmd -B verify`               |
+| Front-end (`frontend-shell`) | Vitest + happy-dom       | 57/57  | `cd frontend-shell && npm test`      |
 
 Coberturas ja garantidas:
 
