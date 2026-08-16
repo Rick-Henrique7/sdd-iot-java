@@ -121,7 +121,7 @@ Qualquer desvio e red flag em code review.
 | `border`     | `#334155` | Borda 1px.                                   |
 | `fg`         | `#F8FAFC` | Texto primario.                              |
 | `fg-muted`   | `#94A3B8` | Texto secundario.                            |
-| `brand`      | `#367C2B` | Verde John Deere.                            |
+| `brand`      | `#367C2B` | Verde Agro (Plataforma).                     |
 | `accent`     | `#FFDE00` | Amarelo agricola (marca).                    |
 | `warning`    | `#F59E0B` | Atencao media (amber-500).                   |
 | `critical`   | `#EF4444` | Alerta critico.                              |
@@ -533,7 +533,7 @@ Regras inviolaveis documentadas em
 - **Clean Architecture** — `domain/` nunca importa Spring, JPA ou Kafka.
 - **Sem dependencias nao-vetadas** em `pom.xml` / `package.json`.
 - **Sem emojis** e **sem `#000000`** no front — usar `lucide-react`
-  e a paleta Slate + John Deere Green (`#367C2B`).
+  e a paleta Slate + Verde Agro (`#367C2B`).
 - **Secrets via env / K8s secrets** — nunca hardcoded; `JWT_SECRET`
   e o unico segredo que a plataforma usa no dev local.
 - **Trunk-based** — cada change vive numa branch de curta duracao
