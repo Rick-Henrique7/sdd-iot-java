@@ -64,6 +64,14 @@ spring:
           filters:
             - name: JwtAuthenticationFilter
 
+        # 5) Field operation — protected (ENABLED in Change 019)
+        - id: field-operation-service
+          uri: http://field-operation-service:8085
+          predicates:
+            - Path=/api/v1/operations/**
+          filters:
+            - name: JwtAuthenticationFilter
+
   # ---------- Resilience4j (baseline, no policies enabled) ----------
   resilience4j:
     circuitbreaker:
