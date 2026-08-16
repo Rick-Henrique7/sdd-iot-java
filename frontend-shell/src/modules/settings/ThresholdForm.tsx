@@ -108,10 +108,10 @@ export function ThresholdForm({ onApplied }: ThresholdFormProps) {
 
       <div className="flex items-center gap-2">
         <Button type="submit" size="sm" disabled={touched && !isValid}>
-          <Save size={14} /> Aplicar
+          <div className="flex"><Save size={14} className="mt-1 mr-2"/> Aplicar</div>
         </Button>
         <Button type="button" variant="secondary" size="sm" onClick={handleReset}>
-          <RotateCcw size={14} /> Restaurar padrões
+          <div className="flex"><RotateCcw size={14} className="mt-1 mr-2" /> Restaurar padrões</div>
         </Button>
       </div>
     </form>

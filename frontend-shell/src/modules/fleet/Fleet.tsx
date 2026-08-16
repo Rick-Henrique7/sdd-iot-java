@@ -42,7 +42,6 @@ export function Fleet() {
         <div className="space-y-1">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-[0.6875rem] uppercase tracking-widest text-fg-muted">
             <Truck size={12} aria-hidden />
-            Change 009
           </span>
           <h1 className="text-h1 font-semibold text-fg">Gestão de Frota</h1>
           <p className="text-sm text-fg-muted">

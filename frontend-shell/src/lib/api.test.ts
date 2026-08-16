@@ -18,7 +18,7 @@ describe('api axios interceptor', () => {
     });
     // Pull the same request-config through our instance to compare.
     const cfg = { headers: new axios.AxiosHeaders() } as any;
-    await api.interceptors.request.handlers[0].fulfilled(cfg);
+    await api.interceptors.request.handlers?.[0]?.fulfilled?.(cfg);
     expect((cfg.headers as Record<string, unknown>).Authorization).toBeUndefined();
   });
 
@@ -27,7 +27,7 @@ describe('api axios interceptor', () => {
       id: 'u1', email: 'a@b.com', role: 'ROLE_OPERADOR',
     });
     const cfg = { headers: new axios.AxiosHeaders() } as any;
-    await api.interceptors.request.handlers[0].fulfilled(cfg);
+    await api.interceptors.request.handlers?.[0]?.fulfilled?.(cfg);
     expect(cfg.headers.Authorization).toBe('Bearer jwt-abc');
   });
 
@@ -37,7 +37,7 @@ describe('api axios interceptor', () => {
     });
     useAuthStore.getState().clear();
     const cfg = { headers: new axios.AxiosHeaders() } as any;
-    await api.interceptors.request.handlers[0].fulfilled(cfg);
+    await api.interceptors.request.handlers?.[0]?.fulfilled?.(cfg);
     expect(cfg.headers.Authorization).toBeUndefined();
   });
 });

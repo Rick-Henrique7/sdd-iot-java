@@ -51,9 +51,11 @@ export function OpenMeteoWidget({ lat, lng }: OpenMeteoWidgetProps) {
   }, [lat, lng]);
 
   return (
-    <div className="panel w-56 space-y-2 p-3 text-xs">
-      <header className="flex items-center justify-between">
-        <span className="text-h2 uppercase tracking-wider text-fg-muted">Clima agora</span>
+    <div className="panel flex w-full flex-wrap items-center justify-between gap-x-6 gap-y-3 px-5 py-3 text-xs">
+      <header className="flex shrink-0 items-baseline gap-3">
+        <span className="text-h2 uppercase tracking-[0.12em] text-fg-muted">
+          Clima agora
+        </span>
         <a
           href="https://open-meteo.com"
           target="_blank"
@@ -70,7 +72,7 @@ export function OpenMeteoWidget({ lat, lng }: OpenMeteoWidgetProps) {
         <p className="text-fg-muted">Clima indisponível.</p>
       )}
       {state.kind === 'ready' && (
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-[repeat(3,minmax(0,1fr))] sm:gap-4 md:gap-6">
           <Metric icon={<Cloud size={14} />} label="Temp" value={`${state.data.temperatureC.toFixed(1)}°C`} />
           <Metric icon={<Wind size={14} />} label="Vento" value={`${state.data.windKmh.toFixed(1)} km/h`} />
           <Metric icon={<Droplets size={14} />} label="Chuva" value={`${state.data.precipitationMm.toFixed(1)} mm`} />
