@@ -8,20 +8,23 @@ import { AppShell } from '@/components/layout/AppShell';
 import { TelemetryStreamMount } from '@/components/telemetry/TelemetryStreamMount';
 
 /**
- * Client-side guard for the authenticated area. Hydrates the auth
- * store from localStorage on mount, then redirects to /login if no
- * token is present. Server-rendered children are still useful
- * (e.g. for SEO of placeholder pages), so we don't `redirect()`
- * server-side.
+ * Client-side guard for the Gestor/Agrônomo shell (Change 021).
+ *
+ * - Hydrates the auth store from localStorage on mount.
+ * - Redirects to /login if there is no token.
+ * - Redirects to /operator/workspace if the user is an Operador
+ *   (operators get the dedicated /operator shell, not this one).
  *
  * Also mounts the global STOMP subscription (`TelemetryStreamMount`)
  * once for the entire authenticated area, so the `telemetryStore`
  * and `alertsStore` stay populated while the user navigates
- * between `/dashboard`, `/mapping`, `/fleet`, `/settings` etc.
+ * between /dashboard, /mapping, /operations, /fleet, /maintenance
+ * and /settings.
  */
-export default function AppLayout({ children }: { children: ReactNode }) {
+export default function GestorLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const token = useAuthStore((s) => s.token);
+  const user = useAuthStore((s) => s.user);
   const hydrate = useAuthStore((s) => s.hydrate);
 
   useEffect(() => {
@@ -29,14 +32,19 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }, [hydrate]);
 
   useEffect(() => {
-    // After hydration completes, redirect if still unauthenticated.
     const stored = typeof window !== 'undefined'
       ? window.localStorage.getItem('agrio.token')
       : null;
+
     if (!token && !stored) {
       router.replace(routes.login);
+      return;
     }
-  }, [token, router]);
+
+    if (user && user.role === 'ROLE_OPERADOR') {
+      router.replace(routes.operatorWorkspace);
+    }
+  }, [token, user, router]);
 
   return (
     <AppShell>
