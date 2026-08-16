@@ -7,3 +7,6 @@ coverage
 .env*.local
 next-env.d.ts
 .tsbuildinfo
+
+# local probes (smoke test scripts, screenshots)
+.git-archive/

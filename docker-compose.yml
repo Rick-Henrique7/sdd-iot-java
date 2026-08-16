@@ -211,10 +211,18 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_BASE_URL=http://api-gateway:8080
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:8080
+      # WS broker lives on the alert-processing service
+      # (Spring STOMP @ /ws). The browser reaches it directly
+      # via the host port 8082 (mapped to the container by
+      # `alert-processing-service` above). The reactive api-
+      # gateway does not proxy WebSockets, so we go around it
+      # for the STOMP connection.
+      - NEXT_PUBLIC_WS_BASE_URL=ws://localhost:8082/ws
       - NODE_ENV=production
     depends_on:
       - api-gateway
+      - alert-processing-service
     restart: unless-stopped
     networks:
       - agrio-network
