@@ -183,6 +183,28 @@ services:
     networks:
       - agrio-network
 
+  # ---- ENABLED in Change 019 ----
+  field-operation-service:
+    build:
+      context: .
+      dockerfile: field-operation-service/Dockerfile
+    container_name: agrio-field-operation
+    ports:
+      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/agrio_db?currentSchema=operations
+      - SPRING_DATASOURCE_USERNAME=agrio_operations
+      - SPRING_DATASOURCE_PASSWORD=agrio_operations_pwd
+    depends_on:
+      kafka:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    networks:
+      - agrio-network
+
   # ---- ENABLED in Change 006 ----
   iot-simulator-service:
     build:

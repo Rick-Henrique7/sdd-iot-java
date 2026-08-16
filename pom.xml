@@ -31,6 +31,7 @@
         <module>telemetry-ingestion-service</module>
         <module>alert-processing-service</module>
         <module>fleet-mapping-service</module>
+        <module>field-operation-service</module>
     </modules>
 
     <!-- ==================== PROPERTIES ========================== -->

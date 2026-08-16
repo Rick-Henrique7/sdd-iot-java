@@ -12,6 +12,7 @@ CREATE SCHEMA IF NOT EXISTS auth;
 CREATE SCHEMA IF NOT EXISTS fleet;
 CREATE SCHEMA IF NOT EXISTS telemetry;
 CREATE SCHEMA IF NOT EXISTS alert;
+CREATE SCHEMA IF NOT EXISTS operations;  -- ENABLED in Change 019
 
 -- ---------- RESTRICTED ROLES ----------
 -- Each service gets its own user, scoped to its own schema.
@@ -35,18 +36,24 @@ BEGIN
         REVOKE ALL ON SCHEMA alert FROM agrio_alert;
         DROP ROLE agrio_alert;
     END IF;
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'agrio_operations') THEN
+        REVOKE ALL ON SCHEMA operations FROM agrio_operations;
+        DROP ROLE agrio_operations;
+    END IF;
 END$$;
 
 CREATE ROLE agrio_auth      WITH LOGIN PASSWORD 'agrio_auth_pwd';
 CREATE ROLE agrio_fleet     WITH LOGIN PASSWORD 'agrio_fleet_pwd';
 CREATE ROLE agrio_telemetry WITH LOGIN PASSWORD 'agrio_telemetry_pwd';
 CREATE ROLE agrio_alert     WITH LOGIN PASSWORD 'agrio_alert_pwd';
+CREATE ROLE agrio_operations WITH LOGIN PASSWORD 'agrio_operations_pwd';
 
 -- ---------- GRANTS ----------
 GRANT USAGE, CREATE ON SCHEMA auth      TO agrio_auth;
 GRANT USAGE, CREATE ON SCHEMA fleet     TO agrio_fleet;
 GRANT USAGE, CREATE ON SCHEMA telemetry TO agrio_telemetry;
 GRANT USAGE, CREATE ON SCHEMA alert     TO agrio_alert;
+GRANT USAGE, CREATE ON SCHEMA operations TO agrio_operations;
 
 -- Default privileges for future objects inside each schema
 ALTER DEFAULT PRIVILEGES IN SCHEMA auth
@@ -68,3 +75,8 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA alert
     GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES    TO agrio_alert;
 ALTER DEFAULT PRIVILEGES IN SCHEMA alert
     GRANT USAGE, SELECT, UPDATE          ON SEQUENCES TO agrio_alert;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA operations
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES    TO agrio_operations;
+ALTER DEFAULT PRIVILEGES IN SCHEMA operations
+    GRANT USAGE, SELECT, UPDATE          ON SEQUENCES TO agrio_operations;
