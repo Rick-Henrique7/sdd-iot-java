@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { useFleet } from '@/hooks/useFleet';
 import { useRecentAlerts } from '@/hooks/useRecentAlerts';
 import { useTelemetryStore } from '@/stores/telemetryStore';
+import { useThresholds } from '@/stores/preferencesStore';
 
 /**
  * Derives the three KPI values for the top row of the dashboard.
@@ -11,7 +12,9 @@ import { useTelemetryStore } from '@/stores/telemetryStore';
  * - **Frota Ativa** — distinct equipmentIds seen in the live
  *   store in the last 60 s, divided by the total fleet size.
  * - **Temperatura Media do Motor** — average `engineTemp`
- *   across all live events in the last 5 min.
+ *   across all live events in the last 5 min. Tone is derived
+ *   from the operator's `preferencesStore` thresholds so the
+ *   `/settings` page can move the goalposts.
  * - **Alertas Criticos (24 h)** — count of `severity = CRITICAL`
  *   in the live alert feed. (We keep this on the live feed
  *   only — historical alerts aren't exposed in this change.
@@ -23,6 +26,7 @@ export function useKpis() {
   const fleetQuery = useFleet();
   const telemetry = useTelemetryStore((s) => s.telemetry);
   const { countBySeverity } = useRecentAlerts();
+  const thresholds = useThresholds();
 
   return useMemo(() => {
     const fleet = fleetQuery.data ?? [];
@@ -49,9 +53,9 @@ export function useKpis() {
     const tempState =
       avgTemp === 0
         ? ('idle' as const)
-        : avgTemp >= 100
+        : avgTemp >= thresholds.engineTempCritical
           ? ('critical' as const)
-          : avgTemp >= 95
+          : avgTemp >= thresholds.engineTempWarning
             ? ('warning' as const)
             : ('ok' as const);
 
@@ -61,5 +65,5 @@ export function useKpis() {
       criticalAlerts: countBySeverity.CRITICAL,
       isLoading: fleetQuery.isLoading,
     };
-  }, [fleetQuery.data, fleetQuery.isLoading, telemetry, countBySeverity.CRITICAL]);
+  }, [fleetQuery.data, fleetQuery.isLoading, telemetry, countBySeverity.CRITICAL, thresholds]);
 }
