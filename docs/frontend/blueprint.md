@@ -7,12 +7,12 @@ Este documento especifica o blueprint visual, a disposição dos displays em CSS
 
 ## 1. Diretrizes Visuais & Padrões Anti-IA
 
-Para garantir uma interface enterprise profissional (nível John Deere) e evitar artefatos genéricos de IA:
+Para garantir uma interface enterprise profissional e evitar artefatos genéricos de IA:
 
 * **Paleta de Cores de Alta Densidade:**
   * **Fundo Principal (Dark Mode):** `#0F172A` (Slate 900) — *Sem pretos puros*.
   * **Superfícies/Cards:** `#1E293B` (Slate 800) com borda `#334155` (Slate 700).
-  * **Verde John Deere (Sucesso/Primário):** `#367C2B` (Hover: `#2D6824`).
+  * **Verde Agro (Sucesso/Primário):** `#367C2B` (Hover: `#2D6824`).
   * **Amarelo Agrícola (Destaques/Atenção):** `#FFDE00`.
   * **Status Crítico:** `#EF4444` | **Status Informativo:** `#3B82F6`.
 * **Proibições Estritas de Design:**

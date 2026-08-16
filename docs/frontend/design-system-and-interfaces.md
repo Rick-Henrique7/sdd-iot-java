@@ -12,7 +12,7 @@ Para garantir um padrão visual industrial *Enterprise*, a aplicação segue rí
 ### 1.1. Paleta de Cores (Dark Mode Slate)
 * **Fundo Principal (Canvas):** `#0F172A` (Slate 900) — *Proibido o uso de preto puro (`#000000`)*.
 * **Cards & Containers:** `#1E293B` (Slate 800) com borda fina de 1px em `#334155` (Slate 700).
-* **Verde de Operação Normal (John Deere Primary):** `#367C2B` (Hover: `#2D6824`).
+* **Verde de Operação Normal (Primário):** `#367C2B` (Hover: `#2D6824`).
 * **Amarelo de Alerta Médio/Atenção:** `#F59E0B` (Slate 900 para textos em fundos amarelos).
 * **Vermelho de Alerta Crítico:** `#EF4444`.
 * **Azul Informativo:** `#3B82F6`.
@@ -76,7 +76,7 @@ A barra de navegação fica fixada à esquerda com recolhimento opcional:
 |  [Wrench]           Manutenção Preditiva |
 |  [Settings]         Configurações        |
 +------------------------------------------+
-|  [User] gestor@johndeere.com [LogOut]    |
+|  [User] gestor@agrio.local [LogOut]      |
 +------------------------------------------+
 ```
 

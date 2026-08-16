@@ -69,7 +69,7 @@ A barra lateral do perfil Gestor passa a contar com **6 abas funcionais**, organ
 |  🛠️  Manutenção Preditiva          |  <-- NOVA
 |  ⚙️  Configurações & Acessos        |
 +------------------------------------+
-|  👤  gestor@johndeere.com [Sair]   |
+|  👤  gestor@agrio.local [Sair]   |
 +------------------------------------+
 ```
 

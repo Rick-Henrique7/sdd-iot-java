@@ -11,7 +11,7 @@ Abaixo está o documento da **Visão Geral e Abrangente do Sistema**, contendo a
 
 Este documento especifica a visão macro, os objetivos estratégicos e a arquitetura global da **Plataforma Agro-IoT Integrada**. O sistema foi concebido para o monitoramento operacional em tempo real, telemetria de alta densidade e manutenção preditiva de frotas agrícolas.
 
-A engenharia da solução é guiada pelo modelo **SDD (Spec-Driven Development)**, assegurando descentralização, baixo acoplamento entre camadas, Clean Code, testabilidade automatizada e aderência aos padrões corporativos enterprise (nível John Deere).
+A engenharia da solução é guiada pelo modelo **SDD (Spec-Driven Development)**, assegurando descentralização, baixo acoplamento entre camadas, Clean Code, testabilidade automatizada e aderência aos padrões corporativos enterprise.
 
 ---
 

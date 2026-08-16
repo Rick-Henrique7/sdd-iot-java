@@ -75,7 +75,7 @@ Para evitar que o alto fluxo de pacotes de telemetria IoT (enviados a cada $n$ m
 * **Paleta de Cores Enterprise:**
 * **Fundo Principal (Dark Mode):** `#0F172A` (Slate 900) — *sem pretos puros*.
 * **Superfícies/Cards:** `#1E293B` (Slate 800) com borda `#334155` (Slate 700).
-* **Verde John Deere (Ação Primária/Sucesso):** `#367C2B` (Hover: `#2D6824`).
+* **Verde Agro (Ação Primária/Sucesso):** `#367C2B` (Hover: `#2D6824`).
 * **Amarelo Agrícola (Destaques/Atenção):** `#FFDE00`.
 * **Status Crítico:** `#EF4444` | **Status Informativo:** `#3B82F6`.
 
