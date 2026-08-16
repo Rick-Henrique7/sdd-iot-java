@@ -9,7 +9,7 @@ import { Select } from '@/components/ui/Select';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/stores/authStore';
 import { routes } from '@/lib/routes';
-import type { AuthResponse } from '@/types/auth';
+import type { AuthResponse, UserRole } from '@/types/auth';
 
 type Mode = 'login' | 'register';
 
@@ -25,7 +25,7 @@ export function AuthForm({ mode }: AuthFormProps) {
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'OPERATOR' | 'AGRONOMIST'>('OPERATOR');
+  const [role, setRole] = useState<UserRole>('ROLE_OPERADOR');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -116,12 +116,11 @@ export function AuthForm({ mode }: AuthFormProps) {
       <Select
         label="Perfil de Acesso"
         value={role}
-        onChange={(e) =>
-          setRole(e.target.value as 'OPERATOR' | 'AGRONOMIST')
-        }
+        onChange={(e) => setRole(e.target.value as UserRole)}
       >
-        <option value="OPERATOR">Operador</option>
-        <option value="AGRONOMIST">Agronomo</option>
+        <option value="ROLE_OPERADOR">Operador</option>
+        <option value="ROLE_AGRONOMO">Agrônomo</option>
+        <option value="ROLE_GESTOR">Gestor</option>
       </Select>
 
       {error && (

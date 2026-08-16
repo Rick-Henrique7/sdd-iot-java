@@ -24,7 +24,7 @@ describe('api axios interceptor', () => {
 
   it('attaches Bearer token from the store', async () => {
     useAuthStore.getState().setSession('jwt-abc', {
-      id: 'u1', email: 'a@b.com', role: 'OPERATOR',
+      id: 'u1', email: 'a@b.com', role: 'ROLE_OPERADOR',
     });
     const cfg = { headers: new axios.AxiosHeaders() } as any;
     await api.interceptors.request.handlers[0].fulfilled(cfg);
@@ -33,7 +33,7 @@ describe('api axios interceptor', () => {
 
   it('drops the header after clear()', async () => {
     useAuthStore.getState().setSession('jwt-abc', {
-      id: 'u1', email: 'a@b.com', role: 'OPERATOR',
+      id: 'u1', email: 'a@b.com', role: 'ROLE_OPERADOR',
     });
     useAuthStore.getState().clear();
     const cfg = { headers: new axios.AxiosHeaders() } as any;
