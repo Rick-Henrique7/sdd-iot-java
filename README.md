@@ -3,9 +3,9 @@
 > **Spec-Driven Development (SDD) reference implementation of an
 > enterprise agricultural IoT monitoring platform** — event-driven
 > microservices on Spring Boot 3.3.4 / Java 17, with a Next.js 14
-> micro-frontend. Thirteen SDD changes shipped end-to-end: six
+> micro-frontend. Seventeen SDD changes shipped end-to-end: six
 > backend services, one IoT simulator, four frontend modules, plus
-> two documentation / polish changes.
+> six documentation / polish changes.
 
 [![CI](https://img.shields.io/badge/CI-passing-367C2B)](./.github/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](./LICENSE)
@@ -43,8 +43,9 @@ seguintes URLs (host = `localhost`):
 | `http://localhost:8082/actuator/health`      | Health do processador de alertas + endpoint STOMP `ws://localhost:8082/ws`.          |
 | `http://localhost:8083/actuator/health`      | Health do servico de autenticacao.                                                   |
 | `http://localhost:8084/actuator/health`      | Health do servico de frota + mapeamento (heatmap).                                   |
-| `localhost:9092`                             | Broker Apache Kafka (topicos: `agri.telemetry.raw`, `agri.telemetry.processed`).     |
-| `localhost:5432`                             | PostgreSQL 15 (schemas isolados: `auth`, `fleet`, `telemetry`, `alert`).             |
+| `http://localhost:8085/actuator/health`      | Health do servico de operacoes de campo (WorkOrder + Downtime).                       |
+| `localhost:9092`                             | Broker Apache Kafka (topicos: `agri.telemetry.raw`, `agri.telemetry.processed`, `agri.operations.events`). |
+| `localhost:5432`                             | PostgreSQL 15 (schemas isolados: `auth`, `fleet`, `telemetry`, `alert`, `operations`). |
 | `localhost:6379`                             | Redis 7 (cache de ultimo estado por equipamento).                                    |
 
 ### 1.1. Subir tudo (do zero)
@@ -61,6 +62,7 @@ docker compose up -d
 8082  = (Invoke-WebRequest http://localhost:8082/actuator/health -UseBasicParsing).StatusCode  # 200
 8083  = (Invoke-WebRequest http://localhost:8083/actuator/health -UseBasicParsing).StatusCode  # 200
 8084  = (Invoke-WebRequest http://localhost:8084/actuator/health -UseBasicParsing).StatusCode  # 200
+8085  = (Invoke-WebRequest http://localhost:8085/actuator/health -UseBasicParsing).StatusCode  # 200
 ```
 
 ### 1.2. Derrubar tudo
@@ -127,6 +129,23 @@ docker compose down -v         # Para containers E apaga volumes (reset completo
                  |                   |   5% de anomalia para
                  |                   |   exercitar o pipeline)
                  +-------------------+
+
+                 (NEW in Change 019, parallel to the telemetry path)
+
+                 +-------------------+        +----------------------+
+                 |  FIELD OPERATION  | -----> | Kafka topic          |
+                 |      :8085        |        | agri.operations.events|
+                 | (WorkOrder +      |        |  (operator-side      |
+                 |  Downtime REST +  |        |   events for live    |
+                 |  Kafka producer)  |        |   dashboard)         |
+                 +-------------------+        +----------------------+
+                          |
+                          v
+                 +-------------------+
+                 | Postgres          |
+                 | (schema           |
+                 |  operations)      |
+                 +-------------------+
 ```
 
 Para o fluxo de dados detalhado e o racional arquitetural, veja
@@ -134,21 +153,21 @@ Para o fluxo de dados detalhado e o racional arquitetural, veja
 
 ---
 
-## 3. Tech stack (atual, pos-Change 013)
+## 3. Tech stack (atual, pos-Change 019)
 
 | Camada              | Tecnologia                                                                                                | Uso                                                                                          |
 |---------------------|------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------|
 | Front-end           | Next.js 14 (App Router, RSC), React 18, TypeScript, Tailwind CSS, Zustand, React Query, @stomp/stompjs    | Shell app + 4 modulos operacionais (dashboard, mapping, fleet, settings).                     |
 | Mapas / geolocal.   | react-leaflet 4 + leaflet 1.9 + leaflet.heat 0.2 (com dynamic ssr:false para isolar o bundle)             | `/mapping` — marcadores de trator, poligono de talhao, heatmap, popover com telemetria ao vivo. |
 | Edge / API Gateway  | Spring Cloud Gateway (WebFlux + Netty), filtro JWT customizado, CORS centralizado                          | Unica porta de entrada do ecossistema. Forward + auth-cross-cutting.                          |
-| Backend (5 servicos)| Spring Boot 3.3.4, Java 17, **Clean Architecture** (domain sem Spring/JPA/Kafka), **Clean Code** (SRP, funcoes pequenas, sem comentarios narrativos) | 5 microservicos: `auth`, `telemetry-ingestion`, `alert-processing`, `fleet-mapping`, `iot-simulator` (Node). |
-| Mensageria          | Apache Kafka 7.4 + Zookeeper 7.4, topicos `agri.telemetry.raw` e `agri.telemetry.processed`                 | Event-driven entre `iot-simulator` → `telemetry-ingestion` → `alert-processing`.            |
+| Backend (6 servicos)| Spring Boot 3.3.4, Java 17, **Clean Architecture** (domain sem Spring/JPA/Kafka), **Clean Code** (SRP, funcoes pequenas, sem comentarios narrativos) | 6 microservicos: `auth`, `telemetry-ingestion`, `alert-processing`, `fleet-mapping`, `iot-simulator` (Node), `field-operation`. |
+| Mensageria          | Apache Kafka 7.4 + Zookeeper 7.4, topicos `agri.telemetry.raw`, `agri.telemetry.processed`, `agri.operations.events` | Event-driven entre `iot-simulator` → `telemetry-ingestion` → `alert-processing` + `field-operation` publicando eventos operacionais. |
 | Tempo real          | STOMP / WebSocket plain (sem SockJS) publicado pelo `alert-processing-service`                            | `/topic/telemetry` + `/topic/alerts` consumidos pelo dashboard.                              |
-| Storage             | PostgreSQL 15 (schemas isolados por bounded context: `auth`, `fleet`, `telemetry`, `alert`), Redis 7       | Persistencia relacional + cache de ultimo estado por equipamento.                            |
+| Storage             | PostgreSQL 15 (schemas isolados por bounded context: `auth`, `fleet`, `telemetry`, `alert`, `operations`), Redis 7 | Persistencia relacional + cache de ultimo estado por equipamento.                            |
 | Auth                | JWT HS256 (JJWT), BCrypt, 3 perfis: `ROLE_OPERADOR` / `ROLE_AGRONOMO` / `ROLE_GESTOR`                     | `auth-service` emite, `api-gateway` valida na borda, frontend decodifica so para UI.         |
 | Front-end dev       | Vitest + @testing-library + happy-dom, ESLint (next/core-web-vitals)                                       | 52 testes, lint obrigatorio, build estatico.                                                  |
-| Back-end dev        | JUnit 5 + H2 (modo Postgres) + @EmbeddedKafka                                                              | 45 testes, broker in-process.                                                                 |
-| Containerizacao     | Docker + Docker Compose (multi-stage build)                                                                | 11 containers: 4 infra (postgres, redis, zookeeper, kafka) + 6 servicos + 1 frontend.       |
+| Back-end dev        | JUnit 5 + H2 (modo Postgres) + @EmbeddedKafka                                                              | 56 testes (45 antigos + 11 do `field-operation-service`), broker in-process.                 |
+| Containerizacao     | Docker + Docker Compose (multi-stage build)                                                                | 12 containers: 4 infra (postgres, redis, zookeeper, kafka) + 7 servicos + 1 frontend.       |
 | Registry / CI       | GitHub Container Registry (GHCR) + GitHub Actions (`mvnw verify` + `npm test` + `npm run build`)           | Imagens publicadas em todo push para `main`; 3 jobs (Validate SDD + Maven + frontend).       |
 | Documentacao        | Mudancas estruturadas em `changes/NNN-name/{proposal,spec,design,tasks}.md`                               | Cada mudanca tem 4 artefatos SDD + archive apos merge.                                       |
 
@@ -161,7 +180,7 @@ Para o fluxo de dados detalhado e o racional arquitetural, veja
 
 ---
 
-## 4. As 13 changes entregues
+## 4. As 17 changes entregues
 
 Cada change vive em `changes/NNN-short-name/` (proposta + spec + design + tasks).
 Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
@@ -176,8 +195,9 @@ Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
 | 004| `alert-processing-service`               | merged  | Consome `agri.telemetry.processed`, avalia regras (engineTemp, rpm), persiste alertas, publica em `/topic/alerts` E `/topic/telemetry` (STOMP), 11 testes. |
 | 005| `fleet-mapping-service`                  | merged  | CRUD de equipamentos, poligonos de talhoes (read), heatmap deterministico por `fieldId`, 12 testes.                                            |
 | 006| `iot-simulator-service`                  | merged  | Node.js 20 + KafkaJS, 3 maquinas fake, 1Hz, 5% de anomalia, fecha o loop end-to-end.                                                            |
+| 019| `field-operation-service` (NEW)          | merged  | WorkOrder (PENDING/IN_PROGRESS/COMPLETED/CANCELLED) + Downtime (REFUELING/MAINTENANCE/CLIMA/REFEICAO), schema `operations`, topico `agri.operations.events`, 11 testes. |
 
-### Frontend (Changes 007–011) + Docs (012–013)
+### Frontend (Changes 007–011) + Docs (012–013, 017–018)
 
 | #  | Change                                  | Status  | Resumo                                                                                                                                            |
 |----|------------------------------------------|---------|----------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -187,9 +207,11 @@ Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
 | 010| `frontend-settings`                      | merged  | `ProfileCard` (read-only), `ThresholdForm` (localStorage via `preferencesStore`), `SessionCard` (JWT countdown), `AboutCard`, 47 testes.         |
 | 011| `frontend-role-enum-fix` (hotfix)        | merged  | Renomeia `UserRole` para o enum do backend (`ROLE_*`), expoe `ROLE_GESTOR` no select, novo helper `formatRole`, 52 testes.                       |
 | 012| `readme-consolidation`                   | merged  | Reescreve o README raiz com 11 secoes, tabela das 11 changes, mapa de URLs, mapa do `docs/`, e o stack correto (sem MUI/SockJS/Testcontainers).   |
-| 013| `frontend-polish-and-readme`             | merged  | ~80 correcoes de acentuacao PT-BR no front (Visualizacao, Manutencao, sessao, etc.), layout do `/mapping` (gap do legend, min-h do mapa, largura do widget), README v2 com Docker, Kafka, Postgres, Clean Code e secao de testes. |
+| 013| `frontend-polish-and-readme`             | merged  | ~80 correcoes de acentuacao PT-BR no front, layout do `/mapping`, README v2 com Docker, Kafka, Postgres, Clean Code.                                  |
+| 017| `frontend-polish-and-docs-prep`          | merged  | Dashboard fix (min-h-0 + overflow-hidden), `TelemetryStreamMount` lifted from HOC to layout, OpenMeteoWidget horizontal, 2 docs/ specs (`field-operation-service`, `operator-profile-and-gestor-sidebar`), 3 placeholder tasks (014/015/016). |
+| 018| `readme-honest-badges` (hotfix)          | merged  | Remove badge misleading de Kubernetes, adiciona 4 badges honestos (Maven, TypeScript, Vitest, Microservices em vermelho), retint Kafka para marrom. |
 
-> O sistema ja nasce com **45 testes backend** (JUnit 5) + **52 testes frontend**
+> O sistema ja nasce com **56 testes backend** (JUnit 5, era 45 antes do `field-operation-service`) + **52 testes frontend**
 > (Vitest) verdes no CI, em 3 jobs: `Validate SDD artifacts`, `Build & test (Maven)`,
 > `Build & test (frontend-shell)`.
 
@@ -203,6 +225,7 @@ Apos o merge, vai para `changes/archive/YYYY-MM-DD-NNN-short-name/`.
 | `POST /api/v1/fleet`               | `fleet-mapping-service:8084`           | 001 + 005 + 009      |
 | `GET  /api/v1/mapping/heatmaps`    | `fleet-mapping-service:8084`           | 001 + 005 + 009      |
 | `ws://localhost:8082/ws`           | `alert-processing-service:8082` (STOMP)| 001 + 004 + 008      |
+| `http://localhost:8080/api/v1/operations/**` | `field-operation-service:8085`         | 001 + 019             |
 | `http://localhost:3000/*`          | `frontend-shell` (Next.js)             | 007 + 008 + 009 + 010 + 011 |
 
 ---
@@ -230,6 +253,7 @@ para navegar:
   - `alert-processing-service.md`
   - `fleet-mapping-service.md`
   - `iot-flet-simulator.md`
+  - `field-operation-service.md` (NEW in Change 019)
 - [`guidelines-and-governance/`](./docs/backend/guidelines-and-governance) —
   regras inviolaveis: Clean Architecture, sem actuator autonomo, DTO
   imutavel, sem emojis, sem pretos puros, etc.
@@ -241,12 +265,13 @@ para navegar:
 - [`blueprint.md`](./docs/frontend/blueprint.md) — blueprint visual
   (login split-screen, dashboard grid 3x4, mapping fullscreen,
   paleta de cores, tipografia, criterios de UX agricola).
+- [`operator-profile-and-gestor-sidebar.md`](./docs/frontend/operator-profile-and-gestor-sidebar.md) (NEW) — UI/UX do perfil Operador + Sidebar 6-abas do Gestor.
+- [`design-system-and-interfaces.md`](./docs/frontend/design-system-and-interfaces.md) (NEW) — Design System completo: tokens, anti-padroes, layout Operator + Gestor.
 
 ### `changes/`
-- 5 mudancas ativas em `changes/008-…` ate `changes/012-…` (proposal +
-  spec + design + tasks).
-- 5 mudancas arquivadas em `changes/archive/2026-08-15-008-…` ate
-  `changes/archive/2026-08-15-013-…`.
+- 3 placeholder tasks em `changes/014-…`, `changes/015-…`, `changes/016-…` (proposal + spec + design + tasks) aguardando o merge das features para serem executadas como pacote de maintenance.
+- 1 placeholder task em `changes/020-…` (Design System) com mesmo padrao.
+- Mudancas arquivadas em `changes/archive/2026-08-15-008-…` ate `changes/archive/2026-08-16-019-…` (12 archives ate o momento).
 - Cada `proposal.md` explica o **porque**; `spec.md` traz os
   requisitos; `design.md` detalha decisoes tecnicas; `tasks.md` lista
   o checklist de implementacao.
@@ -267,6 +292,7 @@ sdd-iot-java/
 ├── alert-processing-service/             # Consome agri.telemetry.processed → alertas + STOMP /ws
 ├── fleet-mapping-service/                # CRUD frota + talhoes + heatmap deterministico
 ├── iot-simulator-service/                # Node.js 20 + KafkaJS, 3 maquinas, 1Hz, 5% anomalia
+├── field-operation-service/              # WorkOrder + Downtime (NEW in Change 019)
 ├── frontend-shell/                       # Next.js 14, modulos dashboard/mapping/fleet/settings
 │
 ├── docs/                                 # Fonte de verdade das especificacoes
