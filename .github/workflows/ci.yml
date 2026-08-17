@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # `actions/checkout` on Linux does not preserve the executable
       # bit from the git tree (Windows-side contributors typically
@@ -41,7 +41,7 @@ jobs:
         run: chmod +x ./mvnw
 
       - name: Set up JDK 21 (Temurin)
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '21'
@@ -61,7 +61,7 @@ jobs:
 
       - name: Upload surefire reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: surefire-reports
           path: '**/target/surefire-reports/*.txt'
@@ -75,7 +75,7 @@ jobs:
     name: Build & test (frontend-shell)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Skip if frontend-shell is not in this commit
         id: skip
@@ -88,7 +88,7 @@ jobs:
 
       - name: Set up Node 20
         if: steps.skip.outputs.skip != 'true'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '20'
           cache: npm
@@ -116,7 +116,7 @@ jobs:
     name: Validate SDD artifacts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
